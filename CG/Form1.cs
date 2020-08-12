@@ -40,9 +40,21 @@ namespace CG
             double[] center1 = { 0, -1, 3 };
             double[] center2 = { 2, 0, 4 };
             double[] center3 = { -2, 0, 4 };
+            double[] center4 = { 0, -5001, 0 };
 
-            Sphere[] spheres = { new Sphere(center2, 1, Color.Green), new Sphere(center1, 1, Color.Red),
-                new Sphere(center3, 1, Color.Blue) };
+
+            double[] color1 = { 255, 0, 0 };
+            double[] color2 = { 0, 0, 255 };
+            double[] color3 = { 0, 255, 0 };
+            double[] color4 = { 255, 255, 0 };
+
+            Sphere[] spheres = { new Sphere(center2, 1, color1), new Sphere(center1, 1, color2),
+                new Sphere(center3, 1, color3), new Sphere(center4, 5000, color4) };
+
+            double[] poslight = { 2, 1, 0 };
+            double[] directionlight = { 1, 4, 4 };
+
+            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
 
 
             for (int x = -result.Width / 2; x < result.Width / 2; x++)
@@ -51,7 +63,7 @@ namespace CG
                 {
                     int[] work = { x, y };
                     double[] direction = RayTracing.CanvasToViewport(result, work);
-                    Color color = RayTracing.TraceRay(spheres, cameraPosition, direction, 1, Double.PositiveInfinity);
+                    Color color = RayTracing.TraceRay(lights, spheres, cameraPosition, direction, 1, Double.PositiveInfinity);
                     RayTracing.PutPixel(result, x, y, color);
 
                 }

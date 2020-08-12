@@ -7,17 +7,17 @@ using System.Drawing;
 
 namespace CG
 {
-    class Objects
+    abstract class Object
     {
         public double[] center;
-        public Color color;
+        public double[] color;
     }
 
-    class Sphere : Objects  
+    class Sphere : Object
     {
         public int radius;
 
-        public Sphere(double[] center, int radius, Color color)
+        public Sphere(double[] center, int radius, double[] color)
         {
             this.center = center;
             this.color = color;
