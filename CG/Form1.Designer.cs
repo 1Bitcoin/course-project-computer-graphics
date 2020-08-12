@@ -45,11 +45,12 @@
             // 
             // canvas
             // 
-            this.canvas.Location = new System.Drawing.Point(12, 12);
+            this.canvas.Location = new System.Drawing.Point(63, 12);
             this.canvas.Name = "canvas";
-            this.canvas.Size = new System.Drawing.Size(1093, 625);
+            this.canvas.Size = new System.Drawing.Size(600, 600);
             this.canvas.TabIndex = 1;
             this.canvas.TabStop = false;
+            this.canvas.Click += new System.EventHandler(this.canvas_Click);
             // 
             // Form1
             // 

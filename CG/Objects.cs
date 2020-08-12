@@ -9,7 +9,7 @@ namespace CG
 {
     class Objects
     {
-        public int[] center;
+        public double[] center;
         public Color color;
     }
 
@@ -17,7 +17,7 @@ namespace CG
     {
         public int radius;
 
-        public Sphere(int[] center, int radius, Color color)
+        public Sphere(double[] center, int radius, Color color)
         {
             this.center = center;
             this.color = color;
