@@ -14,7 +14,6 @@ namespace CG
     {
         Bitmap result;
         Graphics g;
-        Pen penDraw;
 
         public Form1()
         {
@@ -23,8 +22,6 @@ namespace CG
             result = new Bitmap(canvas.Width, canvas.Height);
             g = Graphics.FromImage(result);
             canvas.Image = result;
-
-            penDraw = new Pen(Color.Black);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -48,13 +45,13 @@ namespace CG
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
-            Sphere[] spheres = { new Sphere(center2, 1, color1), new Sphere(center1, 1, color2),
+            Object[] objects = { new Sphere(center2, 1, color1), new Sphere(center1, 1, color2),
                 new Sphere(center3, 1, color3), new Sphere(center4, 5000, color4) };
 
-            double[] poslight = { 2, 1, 0 };
+            double[] poslight = { 0, 2, 4 };
             double[] directionlight = { 1, 4, 4 };
 
-            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
+            Light[] lights = { new AmbientLight(0.1), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
 
 
             for (int x = -result.Width / 2; x < result.Width / 2; x++)
@@ -63,19 +60,12 @@ namespace CG
                 {
                     int[] work = { x, y };
                     double[] direction = RayTracing.CanvasToViewport(result, work);
-                    Color color = RayTracing.TraceRay(lights, spheres, cameraPosition, direction, 1, Double.PositiveInfinity);
+                    Color color = RayTracing.TraceRay(lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity);
                     RayTracing.PutPixel(result, x, y, color);
 
                 }
-            }
-
-            /*g.DrawEllipse(penDraw, 100, 100, 100, 100);
-            g.DrawEllipse(penDraw, 200, 200, 100, 100);
-            g.DrawEllipse(penDraw, 300, 250, 100, 100);*/
-           
-
+            }      
             canvas.Refresh();
-
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)

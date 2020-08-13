@@ -16,6 +16,7 @@ namespace CG
     class Sphere : Object
     {
         public int radius;
+        public string name = "sphere";
 
         public Sphere(double[] center, int radius, double[] color)
         {
@@ -25,6 +26,5 @@ namespace CG
 
             Console.WriteLine("Sphere(int center, int radius, Color color)");
         }
-
     }
 }

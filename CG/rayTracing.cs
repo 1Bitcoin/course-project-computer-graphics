@@ -74,27 +74,23 @@ namespace CG
             {
                 var light = lights[i];
 
-                if (light.Showtype() == "ambient")
-                {
+                if (light is AmbientLight ambientLight)
                     intensity += light.intensity;
-                }
+                
                 else
                 {
-                    double[] vec_l;
-                    if (light.Showtype() == "point")
-                    {
-                        vec_l = Subtract(light.Showposition(), point);
-                    }
-                    else
-                    {  // Light.DIRECTIONAL
-                        vec_l = light.Showposition();
-                    }
+                    double[] vec_l = { 0, 0, 0 };
+
+                    if (light is PointLight pointLight)
+                        vec_l = Subtract(pointLight.position, point);
+
+                    if (light is DirectionalLight directionalLight)
+                        vec_l = directionalLight.direction;
 
                     double n_dot_l = DotProduct(normal, vec_l);
+
                     if (n_dot_l > 0)
-                    {
                         intensity += light.intensity * n_dot_l / (length_n * Length(vec_l));
-                    }
                 }
 
             }
@@ -137,38 +133,42 @@ namespace CG
         }
 
 
-        public static Color TraceRay(Light[] lights, Sphere[] spheres, double[] origin, 
+        public static Color TraceRay(Light[] lights, Object[] objects, double[] origin, 
                                     double[] direction, double min_t, double max_t)
         {
             double tClosest = Double.PositiveInfinity;
-            Sphere closestSphere = null;
+            Object closestObject = null;
 
-            for (int i = 0; i < spheres.Length; i++)
+            for (int i = 0; i < objects.Length; i++)
             {
-                double[] ts = IntersectRaySphere(origin, direction, spheres[i]);
+                double[] ts = { 0, 0 };
 
+                if (objects[i] is Sphere sphere)
+                    ts = IntersectRaySphere(origin, direction, sphere);
+
+                
                 if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
                 {
                     tClosest = ts[0];
-                    closestSphere = spheres[i];
+                    closestObject = objects[i];
                 }
 
                 if (ts[1] < tClosest && min_t < ts[1] && ts[1] < max_t)
                 {
                     tClosest = ts[1];
-                    closestSphere = spheres[i];
+                    closestObject = objects[i];
                 }
             }
 
-            if (closestSphere == null)
+            if (closestObject == null)
                 return Color.Black; // background color!!
 
 
             double[] point = Add(origin, Multiply(tClosest, direction));
-            double[] normal = Subtract(point, closestSphere.center);
+            double[] normal = Subtract(point, closestObject.center); // xmmmmm
 
             normal = Multiply(1.0 / Length(normal), normal);
-            double[] temp = Multiply(ComputeLighting(lights, point, normal), closestSphere.color);
+            double[] temp = Multiply(ComputeLighting(lights, point, normal), closestObject.color);
 
             Color myRgbColor = new Color();
 
