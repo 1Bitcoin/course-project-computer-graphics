@@ -48,10 +48,10 @@ namespace CG
             Object[] objects = { new Sphere(center2, 1, color1), new Sphere(center1, 1, color2),
                 new Sphere(center3, 1, color3), new Sphere(center4, 5000, color4) };
 
-            double[] poslight = { 0, 2, 4 };
+            double[] poslight = { 0, 2, 2 };
             double[] directionlight = { 1, 4, 4 };
 
-            Light[] lights = { new AmbientLight(0.1), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
+            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
 
 
             for (int x = -result.Width / 2; x < result.Width / 2; x++)

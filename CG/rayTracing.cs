@@ -57,11 +57,11 @@ namespace CG
         }
 
         // Clamps a color to the canonical color range.
-        public static double[] Clamp(double[] v)
+        public static int[] Clamp(double[] v)
         {
-            double[] ans = { Math.Min(255, Math.Max(0, v[0])),
-                             Math.Min(255, Math.Max(0, v[1])),
-                             Math.Min(255, Math.Max(0, v[2])) };
+            int[] ans = { Math.Min(255, Math.Max(0, (int)v[0])),
+                             Math.Min(255, Math.Max(0, (int)v[1])),
+                             Math.Min(255, Math.Max(0, (int)v[2])) };
             return ans;
         }
 
@@ -72,7 +72,7 @@ namespace CG
 
             for (int i = 0; i < lights.Length; i++)
             {
-                var light = lights[i];
+                Light light = lights[i];
 
                 if (light is AmbientLight ambientLight)
                     intensity += light.intensity;
@@ -89,10 +89,9 @@ namespace CG
 
                     double n_dot_l = DotProduct(normal, vec_l);
 
-                    if (n_dot_l > 0)
+                    if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
                         intensity += light.intensity * n_dot_l / (length_n * Length(vec_l));
                 }
-
             }
             return intensity;
         }             
@@ -106,7 +105,6 @@ namespace CG
 
             return ans;
         }
-
 
         public static double[] IntersectRaySphere(double[] origin, double[] direction, Sphere sphere)
         {
@@ -141,12 +139,13 @@ namespace CG
 
             for (int i = 0; i < objects.Length; i++)
             {
-                double[] ts = { 0, 0 };
+                double[] ts = { 0, 0 }; // здесь будут значения t_1, t_2, являющиеся искомыми (пересечение) 
+                                        // P = O + t * direction
 
                 if (objects[i] is Sphere sphere)
                     ts = IntersectRaySphere(origin, direction, sphere);
 
-                
+                // поиск ближайшей точки пересечения луча с объектом
                 if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
                 {
                     tClosest = ts[0];
@@ -164,15 +163,18 @@ namespace CG
                 return Color.Black; // background color!!
 
 
-            double[] point = Add(origin, Multiply(tClosest, direction));
-            double[] normal = Subtract(point, closestObject.center); // xmmmmm
+            double[] point = Add(origin, Multiply(tClosest, direction)); // берем ближайшую точку пересечения лучем объекта
+            double[] normal = Subtract(point, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
 
-            normal = Multiply(1.0 / Length(normal), normal);
-            double[] temp = Multiply(ComputeLighting(lights, point, normal), closestObject.color);
+            normal = Multiply(1.0 / Length(normal), normal); // нормализуем
+            double[] temp = Multiply(ComputeLighting(lights, point, normal), closestObject.color); // вычисляем интенсивность в точке
+                                                                                                   // и умножаем ее на RGB массив
 
-            Color myRgbColor = new Color();
+            int[] newColor = Clamp(temp); // проверка (максимум это (255, 255, 255))
 
-            myRgbColor = Color.FromArgb((int)temp[0], (int)temp[1], (int)temp[2]);
+            Color myRgbColor = new Color(); // переводим RGB в Color color
+
+            myRgbColor = Color.FromArgb(newColor[0], newColor[1], newColor[2]);
 
             return myRgbColor;
         }
