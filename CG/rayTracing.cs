@@ -56,6 +56,19 @@ namespace CG
             return ans;
         }
 
+        //3d vectors
+        public static double[] MultiplyMV(double[,] mat, double[] vec)
+        {
+            double[] result = { 0, 0, 0 };
+
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 3; j++)
+                    result[i] += vec[j] * mat[i, j];
+
+            return result;
+
+        }
+
         // Clamps a color to the canonical color range.
         public static int[] Clamp(double[] v)
         {

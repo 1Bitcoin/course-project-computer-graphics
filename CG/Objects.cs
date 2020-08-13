@@ -15,9 +15,9 @@ namespace CG
 
     class Sphere : Object
     {
-        public int radius;
+        public double radius;
 
-        public Sphere(double[] center, int radius, double[] color)
+        public Sphere(double[] center, double radius, double[] color)
         {
             this.center = center;
             this.color = color;
