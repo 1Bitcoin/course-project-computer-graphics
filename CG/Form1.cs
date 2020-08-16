@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace CG
 {
@@ -41,9 +42,9 @@ namespace CG
 
             double[] cameraPosition = { 0, 0, 0 };
 
-            double[] center1 = { 0, -1, 3 };
-            double[] center2 = { 2, 0, 4 };
-            double[] center3 = { -2, 0, 4 };
+            double[] center1 = { 0, -0.5, 2 };
+            double[] center2 = { 1, 0, 3 };
+            double[] center3 = { -1, 0, 3 };
             double[] center4 = { 0, -5001, 0 };
 
 
@@ -52,11 +53,11 @@ namespace CG
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
-            double[] poslight = { 0, 2, 2 };
+            double[] poslight = { 0, 2, 0 };
             double[] directionlight = { 1, 4, 4 };
 
-            Object[] objects = { new Sphere(center2, 0.5, color1), new Sphere(center1, 0.4, color2),
-                new Sphere(center3, 0.7, color3), new Sphere(center4, 5000, color4) };
+            Object[] objects = { new Sphere(center2, 0.8, color1, 50), new Sphere(center1, 0.4, color2, 500),
+                new Sphere(center3, 0.7, color3, 10), new Sphere(center4, 5000, color4, 1000) };
 
             Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
 
@@ -68,20 +69,22 @@ namespace CG
 
             Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
             time.Start(); // запускаем отсчёт времени
+
             for (int x = -result.Width / 2; x < result.Width / 2; x++)
             {
                 for (int y = -result.Height / 2; y < result.Height / 2; y++)
                 {
                     int[] work = { x, y };
                     double[] direction = RayTracing.CanvasToViewport(result, work);
-                    direction = RayTracing.MultiplyMV(cameraRotation, direction);
+                    //direction = RayTracing.MultiplyMV(cameraRotation, direction);
                     Color color = RayTracing.TraceRay(lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity);
                     RayTracing.PutPixel(result, x, y, color);
                     //label1.Text = color.ToString();
                     progressBar1.Value++;
                 }
             }
-            time.Stop(); // останавливаем работу
+
+            time.Stop(); // останавливаем работу таймера
             label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
 
             canvas.Refresh();

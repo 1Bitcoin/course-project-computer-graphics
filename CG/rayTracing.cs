@@ -78,10 +78,11 @@ namespace CG
             return ans;
         }
 
-        public static double ComputeLighting(Light[] lights, double[] point, double[] normal)
+        public static double ComputeLighting(Light[] lights, double[] point, double[] normal, double[] view, double specular)
         {
             double intensity = 0;
             var length_n = Length(normal);  // Should be 1.0, but just in case...
+            var length_v = Length(view);
 
             for (int i = 0; i < lights.Length; i++)
             {
@@ -89,7 +90,7 @@ namespace CG
 
                 if (light is AmbientLight ambientLight)
                     intensity += light.intensity;
-                
+
                 else
                 {
                     double[] vec_l = { 0, 0, 0 };
@@ -102,12 +103,25 @@ namespace CG
 
                     double n_dot_l = DotProduct(normal, vec_l);
 
+                    //Диффузное отражение
                     if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
                         intensity += light.intensity * n_dot_l / (length_n * Length(vec_l));
+
+                    //Зеркальное отражение
+                    if (specular != -1)
+                    {
+                        var vec_r = Subtract(Multiply(2.0 * DotProduct(normal, vec_l), normal), vec_l);
+                        var r_dot_v = DotProduct(vec_r, view);
+
+                        if (r_dot_v > 0)
+                        {
+                            intensity += light.intensity * Math.Pow(r_dot_v / (Length(vec_r) * length_v), specular);
+                        }
+                    }
                 }
             }
             return intensity;
-        }             
+        }
 
         public static double[] CanvasToViewport(Bitmap map, int[] p2d)
         {
@@ -180,8 +194,11 @@ namespace CG
             double[] normal = Subtract(point, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
 
             normal = Multiply(1.0 / Length(normal), normal); // нормализуем
-            double[] temp = Multiply(ComputeLighting(lights, point, normal), closestObject.color); // вычисляем интенсивность в точке
-                                                                                                   // и умножаем ее на RGB массив
+            var view = Multiply(-1, direction);
+
+            double[] temp = Multiply(ComputeLighting(lights, point, normal, view, closestObject.specular), closestObject.color); 
+                                                                                               // вычисляем интенсивность в точке
+                                                                                               // и умножаем ее на RGB массив
 
             int[] newColor = Clamp(temp); // проверка (максимум это (255, 255, 255))
 
