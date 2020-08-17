@@ -42,9 +42,9 @@ namespace CG
 
             double[] cameraPosition = { 0, 0, 0 };
 
-            double[] center1 = { 0, -0.5, 2 };
-            double[] center2 = { 1, 0, 3 };
-            double[] center3 = { -1, 0, 3 };
+            double[] center1 = { 0, -1, 5 };
+            double[] center2 = { -1.5, 0.4, 4 };
+            double[] center3 = { 1.8, 0, 3.2 };
             double[] center4 = { 0, -5001, 0 };
 
 
@@ -53,13 +53,14 @@ namespace CG
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
-            double[] poslight = { 0, 2, 0 };
-            double[] directionlight = { 1, 4, 4 };
+            double[] poslight = { 2, 2, -1 };
+            double[] directionlight = { 0, 0, -2 };
 
-            Object[] objects = { new Sphere(center2, 0.8, color1, 50), new Sphere(center1, 0.4, color2, 500),
-                new Sphere(center3, 0.7, color3, 10), new Sphere(center4, 5000, color4, 1000) };
+            Object[] objects = { new Sphere(center2, 1, color1, 50), new Sphere(center1, 1, color2, 500),
+                new Sphere(center3, 1, color3, 10), new Sphere(center4, 5000, color4, 1000) };
 
-            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6), new DirectionalLight(directionlight, 0.2) };
+            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6) };
+            //new PointLight(poslight, 0.6)
 
             double[,] cameraRotation = { 
                                         { 0.984, 0, -0.1736 }, 

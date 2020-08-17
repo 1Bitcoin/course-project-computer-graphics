@@ -78,7 +78,7 @@ namespace CG
             return ans;
         }
 
-        public static double ComputeLighting(Light[] lights, double[] point, double[] normal, double[] view, double specular)
+        public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, double[] view, double specular)
         {
             double intensity = 0;
             var length_n = Length(normal);  // Should be 1.0, but just in case...
@@ -102,6 +102,19 @@ namespace CG
                         vec_l = directionalLight.direction;
 
                     double n_dot_l = DotProduct(normal, vec_l);
+
+                    // Проверка тени
+
+                    double tClosest = Double.PositiveInfinity;
+                    Object closestObject = null;
+
+                    ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001, 
+                                        Double.PositiveInfinity); // fix eps
+
+                    if (closestObject != null)
+                    {
+                        continue;
+                    }
 
                     //Диффузное отражение
                     if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
@@ -131,6 +144,36 @@ namespace CG
             double[] ans = { p2d[0] * viewportSize / map.Width, p2d[1] * viewportSize / map.Height, projectionPlane_z };
 
             return ans;
+        }
+
+        // Find the closest intersection between a ray and the spheres in the scene.
+        public static void ClosestIntersection(Object[] objects, ref double tClosest, ref Object closestObject, 
+                                          double[] origin, double[] direction, double min_t, double max_t)
+        {
+            tClosest = Double.PositiveInfinity;
+            closestObject = null;
+
+            for (int i = 0; i < objects.Length; i++)
+            {
+                double[] ts = { 0, 0 }; // здесь будут значения t_1, t_2, являющиеся искомыми (пересечение) 
+                                        // P = O + t * direction
+
+                if (objects[i] is Sphere sphere)
+                    ts = IntersectRaySphere(origin, direction, sphere);
+
+                // поиск ближайшей точки пересечения луча с объектом
+                if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
+                {
+                    tClosest = ts[0];
+                    closestObject = objects[i];
+                }
+
+                if (ts[1] < tClosest && min_t < ts[1] && ts[1] < max_t)
+                {
+                    tClosest = ts[1];
+                    closestObject = objects[i];
+                }
+            }
         }
 
         public static double[] IntersectRaySphere(double[] origin, double[] direction, Sphere sphere)
@@ -164,27 +207,7 @@ namespace CG
             double tClosest = Double.PositiveInfinity;
             Object closestObject = null;
 
-            for (int i = 0; i < objects.Length; i++)
-            {
-                double[] ts = { 0, 0 }; // здесь будут значения t_1, t_2, являющиеся искомыми (пересечение) 
-                                        // P = O + t * direction
-
-                if (objects[i] is Sphere sphere)
-                    ts = IntersectRaySphere(origin, direction, sphere);
-
-                // поиск ближайшей точки пересечения луча с объектом
-                if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
-                {
-                    tClosest = ts[0];
-                    closestObject = objects[i];
-                }
-
-                if (ts[1] < tClosest && min_t < ts[1] && ts[1] < max_t)
-                {
-                    tClosest = ts[1];
-                    closestObject = objects[i];
-                }
-            }
+            ClosestIntersection(objects, ref tClosest, ref closestObject, origin, direction, min_t, max_t);
 
             if (closestObject == null)
                 return Color.Black; // background color!!
@@ -196,7 +219,7 @@ namespace CG
             normal = Multiply(1.0 / Length(normal), normal); // нормализуем
             var view = Multiply(-1, direction);
 
-            double[] temp = Multiply(ComputeLighting(lights, point, normal, view, closestObject.specular), closestObject.color); 
+            double[] temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject.specular), closestObject.color); 
                                                                                                // вычисляем интенсивность в точке
                                                                                                // и умножаем ее на RGB массив
 
@@ -209,5 +232,6 @@ namespace CG
             return myRgbColor;
         }
     }
+  
 
 }
