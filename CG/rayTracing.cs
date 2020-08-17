@@ -29,20 +29,20 @@ namespace CG
             return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
         }
 
-        // Length of a 3D vector.
+        // Длина 3д вектора.
         public static double Length(double[] v)
         {
             return Math.Sqrt(DotProduct(v, v));
         }
 
-        // Computes k * vec.
+        // Вычисляем k * vec.
         public static double[] Multiply(double k, double[] v)
         {
             double[] ans = { k * v[0], k * v[1], k * v[2] };
             return ans;
         }
 
-        // Computes v1 + v2.
+        // Вычисляем v1 + v2.
         public static double[] Add(double[] v1, double[] v2)
         {
             double[] ans = { v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2] };
@@ -56,7 +56,7 @@ namespace CG
             return ans;
         }
 
-        //3d vectors
+        // матрица поворота на вектор
         public static double[] MultiplyMV(double[,] mat, double[] vec)
         {
             double[] result = { 0, 0, 0 };
@@ -69,13 +69,23 @@ namespace CG
 
         }
 
-        // Clamps a color to the canonical color range.
-        public static int[] Clamp(double[] v)
+        // Проверочка.
+        public static Color Clamp(double[] color)
         {
-            int[] ans = { Math.Min(255, Math.Max(0, (int)v[0])),
-                             Math.Min(255, Math.Max(0, (int)v[1])),
-                             Math.Min(255, Math.Max(0, (int)v[2])) };
-            return ans;
+            int[] ans = { Math.Min(255, Math.Max(0, (int)color[0])),
+                             Math.Min(255, Math.Max(0, (int)color[1])),
+                             Math.Min(255, Math.Max(0, (int)color[2])) };
+
+            Color myRgbColor = new Color(); // переводим RGB в Color color
+            myRgbColor = Color.FromArgb(ans[0], ans[1], ans[2]);
+
+            return myRgbColor;
+        }
+
+        // Отраженный относительно нормали вектор.
+        public static double[] ReflectRay(double[] vector, double[] normal)
+        {
+            return Subtract(Multiply(2 * DotProduct(vector, normal), normal), vector);
         }
 
         public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, double[] view, double specular)
@@ -104,7 +114,6 @@ namespace CG
                     double n_dot_l = DotProduct(normal, vec_l);
 
                     // Проверка тени
-
                     double tClosest = Double.PositiveInfinity;
                     Object closestObject = null;
 
@@ -123,7 +132,7 @@ namespace CG
                     //Зеркальное отражение
                     if (specular != -1)
                     {
-                        var vec_r = Subtract(Multiply(2.0 * DotProduct(normal, vec_l), normal), vec_l);
+                        var vec_r = ReflectRay(vec_l, normal);
                         var r_dot_v = DotProduct(vec_r, view);
 
                         if (r_dot_v > 0)
@@ -201,7 +210,7 @@ namespace CG
         }
 
 
-        public static Color TraceRay(Light[] lights, Object[] objects, double[] origin, 
+        public static double[] TraceRay(int recursionDepth, Light[] lights, Object[] objects, double[] origin, 
                                     double[] direction, double min_t, double max_t)
         {
             double tClosest = Double.PositiveInfinity;
@@ -210,8 +219,10 @@ namespace CG
             ClosestIntersection(objects, ref tClosest, ref closestObject, origin, direction, min_t, max_t);
 
             if (closestObject == null)
-                return Color.Black; // background color!!
-
+            {
+                double[] background = { 0, 0, 0 }; // background color!!
+                return background;
+            }
 
             double[] point = Add(origin, Multiply(tClosest, direction)); // берем ближайшую точку пересечения лучем объекта
             double[] normal = Subtract(point, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
@@ -219,19 +230,25 @@ namespace CG
             normal = Multiply(1.0 / Length(normal), normal); // нормализуем
             var view = Multiply(-1, direction);
 
-            double[] temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject.specular), closestObject.color); 
-                                                                                               // вычисляем интенсивность в точке
-                                                                                               // и умножаем ее на RGB массив
+            // Локальный цвет
+            double[] temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject.specular), 
+                                                     closestObject.color);
+                                                                                // вычисляем интенсивность в точке
+                                                                                // и умножаем ее на RGB массив
 
-            int[] newColor = Clamp(temp); // проверка (максимум это (255, 255, 255))
+            if (closestObject.reflective <= 0 || recursionDepth <= 0)
+            {
+                return temp;
+            }
 
-            Color myRgbColor = new Color(); // переводим RGB в Color color
+            var reflected_ray = ReflectRay(view, normal);
+            var reflected_color = TraceRay(recursionDepth - 1, lights, objects, point, reflected_ray, 
+                                           0.001, Double.PositiveInfinity); // fix eps
 
-            myRgbColor = Color.FromArgb(newColor[0], newColor[1], newColor[2]);
+            return Add(Multiply(1 - closestObject.reflective, temp),
+                   Multiply(closestObject.reflective, reflected_color));
 
-            return myRgbColor;
+            //return;
         }
-    }
-  
-
+    } 
 }

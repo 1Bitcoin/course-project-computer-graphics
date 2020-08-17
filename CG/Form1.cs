@@ -56,8 +56,10 @@ namespace CG
             double[] poslight = { 2, 2, -1 };
             double[] directionlight = { 0, 0, -2 };
 
-            Object[] objects = { new Sphere(center2, 1, color1, 50), new Sphere(center1, 1, color2, 500),
-                new Sphere(center3, 1, color3, 10), new Sphere(center4, 5000, color4, 1000) };
+            int recursionDepth = 3;
+
+            Object[] objects = { new Sphere(center2, 1, color1, 50, 0.2), new Sphere(center1, 1, color2, 500, 0.3),
+                new Sphere(center3, 1, color3, 10, 0.4), new Sphere(center4, 5000, color4, 1000, 0.5) };
 
             Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6) };
             //new PointLight(poslight, 0.6)
@@ -77,9 +79,9 @@ namespace CG
                 {
                     int[] work = { x, y };
                     double[] direction = RayTracing.CanvasToViewport(result, work);
-                    //direction = RayTracing.MultiplyMV(cameraRotation, direction);
-                    Color color = RayTracing.TraceRay(lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity);
-                    RayTracing.PutPixel(result, x, y, color);
+                    direction = RayTracing.MultiplyMV(cameraRotation, direction);
+                    double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity);
+                    RayTracing.PutPixel(result, x, y, RayTracing.Clamp(color));
                     //label1.Text = color.ToString();
                     progressBar1.Value++;
                 }
