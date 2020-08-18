@@ -40,36 +40,60 @@ namespace CG
         {
             progressBar1.Value = 0;
 
-            double[] cameraPosition = { 0, 0, 0 };
+            double[] cameraPosition = { Int32.Parse(textBox2.Text), Int32.Parse(textBox3.Text), Int32.Parse(textBox4.Text) };
 
-            double[] center1 = { 0, -1, 5 };
-            double[] center2 = { -1.5, 0.4, 4 };
-            double[] center3 = { 1.8, 0, 3.2 };
-            double[] center4 = { 0, -5001, 0 };
+            double[] eye1 = { 0.05, 0.17, 2.92 };
+            double[] eye2 = { -0.05, 0.17, 2.92 };
 
+            double[] nose = { 0, 0.13, 2.92 };
 
-            double[] color1 = { 255, 0, 0 };
-            double[] color2 = { 0, 0, 255 };
+            double[] baseSphere = { 0, -0.5, 3 };
+            double[] middleSphere = { 0, -0.1, 3 };
+            double[] highSphere = { 0, 0.17, 3 };
+
+            double[] majorSphere = { 0, -0.4, 3 };
+            double[] underMajorsphere = { 0, -1.6, 3 };
+            double[] plane = { 0, -5001, 0 };
+
+            double[] black = { 0, 0, 0 };
+            double[] orange = { 255, 128, 0 };
+
+            double[] color1 = { 254, 239, 210 };
+            double[] color2 = { 254, 239, 210 };
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
             double[] poslight = { 2, 2, -1 };
+            double[] poslight1 = { -1, 1, 3 };
+            double[] poslight2 = { 0, 5, 4 };
+
             double[] directionlight = { 0, 0, -2 };
 
-            int recursionDepth = 3;
+            int recursionDepth = 0;
 
-            Object[] objects = { new Sphere(center2, 1, color1, 50, 0.2), new Sphere(center1, 1, color2, 500, 0.3),
-                new Sphere(center3, 1, color3, 10, 0.4), new Sphere(center4, 5000, color4, 1000, 0.5) };
+            //new Sphere(center2, 1, color1, 50, 0.2)
+            //new Sphere(center3, 1, color3, 10, 0.4)
 
-            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.6) };
+            Object[] objects = { new Sphere(majorSphere, 1, color2, 1000, 0, 1), new Sphere(baseSphere, 0.3, color3, 1000, 0.3, 0),
+                 new Sphere(middleSphere, 0.2, color3, 1000, 0.3, 0), new Sphere(highSphere, 0.1, color3, 1000, 0.3, 0),
+                 new Sphere(plane, 5000, color4, 1000, 0.5, 0), new Sphere(underMajorsphere, 1, color1, 1000, 0.3, 0),
+                 new Sphere(eye1, 0.025, black, 1000, 0.3, 0), new Sphere(eye2, 0.025, black, 1000, 0.3, 0),
+                 new Sphere(nose, 0.025, orange, 1000, 0.3, 0) };
+
+
+
+            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2) };
             //new PointLight(poslight, 0.6)
 
+            int angle = Int32.Parse(textBox1.Text);
+
             double[,] cameraRotation = { 
-                                        { 0.984, 0, -0.1736 }, 
+                                        { Math.Cos(Math.PI * angle / 180.0), 0, Math.Sin(Math.PI * angle / 180.0) }, 
                                         { 0, 1, 0 },
-                                        { 0.1736, 0, 0.984 }
+                                        { -Math.Sin(Math.PI * angle / 180.0), 0, Math.Cos(Math.PI * angle / 180.0)}
                                         }; //dell
 
+      
             Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
             time.Start(); // запускаем отсчёт времени
 
@@ -132,6 +156,21 @@ namespace CG
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label5_Click(object sender, EventArgs e)
         {
 
         }

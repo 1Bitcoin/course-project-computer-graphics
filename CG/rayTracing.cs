@@ -88,7 +88,8 @@ namespace CG
             return Subtract(Multiply(2 * DotProduct(vector, normal), normal), vector);
         }
 
-        public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, double[] view, double specular)
+        public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, 
+                                             double[] view, Object myObject)
         {
             double intensity = 0;
             var length_n = Length(normal);  // Should be 1.0, but just in case...
@@ -125,19 +126,19 @@ namespace CG
                         continue;
                     }
 
-                    //Диффузное отражение
+                    // Диффузное отражение
                     if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
                         intensity += light.intensity * n_dot_l / (length_n * Length(vec_l));
 
-                    //Зеркальное отражение
-                    if (specular != -1)
+                    // Зеркальное отражение
+                    if (myObject.specular != -1)
                     {
                         var vec_r = ReflectRay(vec_l, normal);
                         var r_dot_v = DotProduct(vec_r, view);
 
                         if (r_dot_v > 0)
                         {
-                            intensity += light.intensity * Math.Pow(r_dot_v / (Length(vec_r) * length_v), specular);
+                            intensity += light.intensity * Math.Pow(r_dot_v / (Length(vec_r) * length_v), myObject.specular);
                         }
                     }
                 }
@@ -224,31 +225,46 @@ namespace CG
                 return background;
             }
 
-            double[] point = Add(origin, Multiply(tClosest, direction)); // берем ближайшую точку пересечения лучем объекта
+            double[] point = Add(origin, Multiply(tClosest, direction)); // вычисляем ближайшую точку пересечения лучем объекта
             double[] normal = Subtract(point, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
 
             normal = Multiply(1.0 / Length(normal), normal); // нормализуем
             var view = Multiply(-1, direction);
 
+            double[] newTransparentcolor = { 0, 0, 0 };
+            double[] temp = { 0, 0, 0 };
+
+
+            // Прозрачность
+            if (closestObject.transparent > 0)
+            {
+                newTransparentcolor = TraceRay(0, lights, objects, point, direction, 0.001, Double.PositiveInfinity);
+            }
+            
+            
             // Локальный цвет
-            double[] temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject.specular), 
-                                                     closestObject.color);
-                                                                                // вычисляем интенсивность в точке
-                                                                                // и умножаем ее на RGB массив
+            temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject),
+                                        closestObject.color);
+                                                                                    // вычисляем интенсивность в точке
+                                                                                    // и умножаем ее на RGB массив  
+            
+
 
             if (closestObject.reflective <= 0 || recursionDepth <= 0)
             {
-                return temp;
+                double[] newTemp = Add(temp, Multiply(closestObject.transparent, newTransparentcolor));
+                return newTemp;
             }
 
+            // Отраженный цвет
             var reflected_ray = ReflectRay(view, normal);
             var reflected_color = TraceRay(recursionDepth - 1, lights, objects, point, reflected_ray, 
                                            0.001, Double.PositiveInfinity); // fix eps
-
-            return Add(Multiply(1 - closestObject.reflective, temp),
+      
+            double[] test = Add(Multiply(1 - closestObject.reflective, temp),
                    Multiply(closestObject.reflective, reflected_color));
 
-            //return;
+            return Add(test, Multiply(closestObject.transparent, newTransparentcolor));
         }
     } 
 }
