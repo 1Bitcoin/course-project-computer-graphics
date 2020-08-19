@@ -89,11 +89,13 @@ namespace CG
         }
 
         public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, 
-                                             double[] view, Object myObject)
+                                             double[] view, Object myObject, double[] prevPoint, int flag)
         {
             double intensity = 0;
             var length_n = Length(normal);  // Should be 1.0, but just in case...
             var length_v = Length(view);
+
+            double t_max = 1;
 
             for (int i = 0; i < lights.Length; i++)
             {
@@ -107,10 +109,27 @@ namespace CG
                     double[] vec_l = { 0, 0, 0 };
 
                     if (light is PointLight pointLight)
-                        vec_l = Subtract(pointLight.position, point);
+                    {
+                        if (flag == 0)
+                            vec_l = Subtract(pointLight.position, point);
+                        else
+                        {
+                            double[] test = { 0, 0, 0.001 };
+                            prevPoint = Add(prevPoint, test);
+                            vec_l = Subtract(prevPoint, point);
 
-                    if (light is DirectionalLight directionalLight)
-                        vec_l = directionalLight.direction;
+                        }
+                        t_max = 1;
+                    }
+
+                    if (light is DirectionalLight directionalLight) // check this
+                    {
+                        if (flag == 0)
+                            vec_l = directionalLight.direction;
+                        /*else
+                            vec_l = Subtract(prevPoint, point);*/
+                        t_max = Double.PositiveInfinity;
+                    }
 
                     double n_dot_l = DotProduct(normal, vec_l);
 
@@ -119,7 +138,7 @@ namespace CG
                     Object closestObject = null;
 
                     ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001, 
-                                        Double.PositiveInfinity); // fix eps
+                                        t_max, flag); // fix eps
 
                     if (closestObject != null)
                     {
@@ -158,7 +177,7 @@ namespace CG
 
         // Find the closest intersection between a ray and the spheres in the scene.
         public static void ClosestIntersection(Object[] objects, ref double tClosest, ref Object closestObject, 
-                                          double[] origin, double[] direction, double min_t, double max_t)
+                                          double[] origin, double[] direction, double min_t, double max_t, int flag)
         {
             tClosest = Double.PositiveInfinity;
             closestObject = null;
@@ -212,12 +231,14 @@ namespace CG
 
 
         public static double[] TraceRay(int recursionDepth, Light[] lights, Object[] objects, double[] origin, 
-                                    double[] direction, double min_t, double max_t)
+                                    double[] direction, double min_t, double max_t, int flag)
         {
+            //int[] flags = new int[recursionDepth];
+
             double tClosest = Double.PositiveInfinity;
             Object closestObject = null;
 
-            ClosestIntersection(objects, ref tClosest, ref closestObject, origin, direction, min_t, max_t);
+            ClosestIntersection(objects, ref tClosest, ref closestObject, origin, direction, min_t, max_t, flag);
 
             if (closestObject == null)
             {
@@ -238,33 +259,32 @@ namespace CG
             // Прозрачность
             if (closestObject.transparent > 0)
             {
-                newTransparentcolor = TraceRay(0, lights, objects, point, direction, 0.001, Double.PositiveInfinity);
+                newTransparentcolor = TraceRay(0, lights, objects, point, direction, 0.001, Double.PositiveInfinity, 1);
+                //flag = 1;
             }
             
             
             // Локальный цвет
-            temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject),
-                                        closestObject.color);
-                                                                                    // вычисляем интенсивность в точке
-                                                                                    // и умножаем ее на RGB массив  
-            
-
+            temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
+                                    closestObject.color);
+                                                                                // вычисляем интенсивность в точке
+                                                                                // и умножаем ее на RGB массив            
 
             if (closestObject.reflective <= 0 || recursionDepth <= 0)
             {
-                double[] newTemp = Add(temp, Multiply(closestObject.transparent, newTransparentcolor));
+                double[] newTemp = Add(temp, Multiply(closestObject.transparent - 0.6, newTransparentcolor));
                 return newTemp;
             }
 
             // Отраженный цвет
             var reflected_ray = ReflectRay(view, normal);
             var reflected_color = TraceRay(recursionDepth - 1, lights, objects, point, reflected_ray, 
-                                           0.001, Double.PositiveInfinity); // fix eps
+                                           0.001, Double.PositiveInfinity, 0); // fix eps
       
             double[] test = Add(Multiply(1 - closestObject.reflective, temp),
                    Multiply(closestObject.reflective, reflected_color));
 
-            return Add(test, Multiply(closestObject.transparent, newTransparentcolor));
+            return Add(test, Multiply(closestObject.transparent - 0.4, newTransparentcolor));
         }
     } 
 }
