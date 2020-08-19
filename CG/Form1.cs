@@ -59,9 +59,10 @@ namespace CG
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
+            double[] snow = { 255, 255, 255 };
 
             double[] color1 = { 254, 239, 210 };
-            double[] color2 = { 254, 239, 210 };
+            double[] color2 = { 254, 230, 211 };
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
@@ -75,10 +76,10 @@ namespace CG
 
             //new Sphere(center2, 1, color1, 50, 0.2)
             //new Sphere(center3, 1, color3, 10, 0.4)
-
-            Object[] objects = { new Sphere(majorSphere, 1, color2, 1000, 0, 1), new Sphere(baseSphere, 0.3, color3, 1000, 0.3, 0),
-                 new Sphere(middleSphere, 0.2, color3, 1000, 0.3, 0), new Sphere(highSphere, 0.1, color3, 1000, 0.3, 0),
-                 new Sphere(plane, 5000, color4, 1000, 0, 0), new Sphere(underMajorsphere, 1, color1, 1000, 0.3, 0),
+            //{ new Sphere(majorSphere, 1, color2, 1000, 0, 1),
+            Object[] objects = { new Sphere(majorSphere, 1, color2, 1000, 0, 1), new Sphere(baseSphere, 0.3, snow, 1000, 0, 0),
+                 new Sphere(middleSphere, 0.2, snow, 1000, 0, 0), new Sphere(highSphere, 0.1, snow, 1000, 0, 0),
+                 new Sphere(plane, 5000, color4, 1000, 0.5, 0), new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0),
                  new Sphere(eye1, 0.025, black, 1000, 0.3, 0), new Sphere(eye2, 0.025, black, 1000, 0.3, 0),
                  new Sphere(nose, 0.025, orange, 1000, 0.3, 0), new Sphere(test, 1, color3, 1000, 0.5, 0) };
 

@@ -89,7 +89,7 @@ namespace CG
         }
 
         public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, 
-                                             double[] view, Object myObject, double[] prevPoint, int flag)
+                                             double[] view, Object myObject, double[] prevPoint, int flag, double[] pointEps)
         {
             double intensity = 0;
             var length_n = Length(normal);  // Should be 1.0, but just in case...
@@ -114,9 +114,10 @@ namespace CG
                             vec_l = Subtract(pointLight.position, point);
                         else
                         {
-                            double[] test = { 0, 0, 0.001 };
-                            prevPoint = Add(prevPoint, test);
-                            vec_l = Subtract(prevPoint, point);
+                            //Multiply(t);
+                            //double[] test = { 0, 0, 0.001 };
+                            //pointEps = Add(pointEps, test);
+                            vec_l = Subtract(pointEps, point);
 
                         }
                         t_max = 1;
@@ -137,7 +138,7 @@ namespace CG
                     double tClosest = Double.PositiveInfinity;
                     Object closestObject = null;
 
-                    ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001, 
+                    ClosestIntersection(objects, ref tClosest, ref closestObject, pointEps, vec_l, 0.001, 
                                         t_max, flag); // fix eps
 
                     if (closestObject != null)
@@ -235,7 +236,7 @@ namespace CG
         {
             //int[] flags = new int[recursionDepth];
 
-            double tClosest = Double.PositiveInfinity;
+            double tClosest = Double.PositiveInfinity;           
             Object closestObject = null;
 
             ClosestIntersection(objects, ref tClosest, ref closestObject, origin, direction, min_t, max_t, flag);
@@ -247,7 +248,9 @@ namespace CG
             }
 
             double[] point = Add(origin, Multiply(tClosest, direction)); // вычисляем ближайшую точку пересечения лучем объекта
-            double[] normal = Subtract(point, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
+            double[] pointEps = Add(origin, Multiply(tClosest - 0.001, direction));
+
+            double[] normal = Subtract(pointEps, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
 
             normal = Multiply(1.0 / Length(normal), normal); // нормализуем
             var view = Multiply(-1, direction);
@@ -265,7 +268,7 @@ namespace CG
             
             
             // Локальный цвет
-            temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
+            temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, pointEps),
                                     closestObject.color);
                                                                                 // вычисляем интенсивность в точке
                                                                                 // и умножаем ее на RGB массив            
