@@ -54,6 +54,7 @@ namespace CG
             double[] majorSphere = { 0, -0.4, 3 };
             double[] underMajorsphere = { 0, -1.6, 3 };
             double[] plane = { 0, -5001, 0 };
+            double[] behindMajorsphere = { 0, 0.5, 6 };
 
             double[] test = { -2.1, 0.5, 3 };
 
@@ -62,7 +63,7 @@ namespace CG
             double[] snow = { 255, 255, 255 };
 
             double[] color1 = { 254, 239, 210 };
-            double[] color2 = { 254, 230, 211 };
+            double[] color2 = { 240, 240, 240 };
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
@@ -77,13 +78,14 @@ namespace CG
             //new Sphere(center2, 1, color1, 50, 0.2)
             //new Sphere(center3, 1, color3, 10, 0.4)
             //{ new Sphere(majorSphere, 1, color2, 1000, 0, 1),
-            Object[] objects = { new Sphere(majorSphere, 1, color2, 1000, 0, 1), new Sphere(baseSphere, 0.3, snow, 1000, 0, 0),
-                 new Sphere(middleSphere, 0.2, snow, 1000, 0, 0), new Sphere(highSphere, 0.1, snow, 1000, 0, 0),
+            Object[] objects = { new Sphere(majorSphere, 1, color2, 1000, 0, 1), new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0),
+                 new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0), new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0),
                  new Sphere(plane, 5000, color4, 1000, 0.5, 0), new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0),
                  new Sphere(eye1, 0.025, black, 1000, 0.3, 0), new Sphere(eye2, 0.025, black, 1000, 0.3, 0),
-                 new Sphere(nose, 0.025, orange, 1000, 0.3, 0), new Sphere(test, 1, color3, 1000, 0.5, 0) };
+                 new Sphere(nose, 0.025, orange, 1000, 0.3, 0), new Sphere(test, 1, color3, 1000, 0.5, 0),
+                 new Sphere(behindMajorsphere, 1, orange, 1000, 0, 0) };
 
-            Light[] lights = { new AmbientLight(0.2), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2) };
+            Light[] lights = { new AmbientLight(0.4), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2) };
             //new PointLight(poslight, 0.6)
 
             int angle = Int32.Parse(textBox1.Text);
@@ -94,7 +96,7 @@ namespace CG
                                         { -Math.Sin(Math.PI * angle / 180.0), 0, Math.Cos(Math.PI * angle / 180.0)}
                                         }; //dell
 
-      
+            //c = Color.FromArgb(80, 20, 86, 20);
             Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
             time.Start(); // запускаем отсчёт времени
 
