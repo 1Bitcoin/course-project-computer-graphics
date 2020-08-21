@@ -117,8 +117,7 @@ namespace CG
 
                     if (light is DirectionalLight directionalLight) // check this
                     {
-                        if (flag == 0)
-                            vec_l = directionalLight.direction;
+                        vec_l = directionalLight.direction;
                         /*else
                             vec_l = Subtract(prevPoint, point);*/
                         t_max = Double.PositiveInfinity;
@@ -168,7 +167,7 @@ namespace CG
             return ans;
         }
 
-        // Find the closest intersection between a ray and the spheres in the scene.
+        // Поиск ближайшего пересечения между объектом и лучом.
         public static void ClosestIntersection(Object[] objects, ref double tClosest, ref Object closestObject, 
                                           double[] origin, double[] direction, double min_t, double max_t, int flag)
         {
@@ -251,22 +250,30 @@ namespace CG
             double[] newTransparentcolor = { 0, 0, 0 };
             double[] temp = { 0, 0, 0 };
 
+            int newFlag = 0;
+
             // Прозрачность
             if (closestObject.transparent > 0)
             {
-                newTransparentcolor = TraceRay(0, lights, objects, pointEps, direction, 0.001, Double.PositiveInfinity, 1);
-                //flag = 1;
+                newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, direction, 0.001, Double.PositiveInfinity, 1);
+                newFlag = 1;
             }
+            
             
             // Локальный цвет
             temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
                                 closestObject.color);
-                                                                            // вычисляем интенсивность в точке
-                                                                            // и умножаем ее на RGB массив 
+            // вычисляем интенсивность в точке
+            // и умножаем ее на RGB массив 
+
+            if (newFlag == 1)
+                temp = Multiply(0.3, temp);
+
+
 
             if (closestObject.reflective <= 0 || recursionDepth <= 0)
             {
-                double[] newTemp = Add(temp, Multiply(closestObject.transparent - 0.6, newTransparentcolor));
+                double[] newTemp = Add(temp, Multiply(closestObject.transparent * 0.6, newTransparentcolor));
                 return newTemp;
             }
 
@@ -278,7 +285,7 @@ namespace CG
             double[] test = Add(Multiply(1 - closestObject.reflective, temp),
                    Multiply(closestObject.reflective, reflected_color));
 
-            return Add(test, Multiply(closestObject.transparent * 0.1, newTransparentcolor));
+            return Add(test, Multiply(closestObject.transparent, newTransparentcolor));
         }
     } 
 }

@@ -83,9 +83,9 @@ namespace CG
                  new Sphere(plane, 5000, color4, 1000, 0.5, 0), new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0),
                  new Sphere(eye1, 0.025, black, 1000, 0.3, 0), new Sphere(eye2, 0.025, black, 1000, 0.3, 0),
                  new Sphere(nose, 0.025, orange, 1000, 0.3, 0), new Sphere(test, 1, color3, 1000, 0.5, 0),
-                 new Sphere(behindMajorsphere, 1, orange, 1000, 0, 0) };
+                 new Sphere(behindMajorsphere, 1, color2, 1000, 0, 1) };
 
-            Light[] lights = { new AmbientLight(0.4), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2) };
+            Light[] lights = { new AmbientLight(0.4), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.3), new PointLight(poslight2, 0.1) };
             //new PointLight(poslight, 0.6)
 
             int angle = Int32.Parse(textBox1.Text);
