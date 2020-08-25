@@ -24,51 +24,6 @@ namespace CG
             map.SetPixel(x, y, color);
         }
 
-        public static double DotProduct(double[] v1, double[] v2)
-        {
-            return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
-        }
-
-        // Длина 3д вектора.
-        public static double Length(double[] v)
-        {
-            return Math.Sqrt(DotProduct(v, v));
-        }
-
-        // Вычисляем k * vec.
-        public static double[] Multiply(double k, double[] v)
-        {
-            double[] ans = { k * v[0], k * v[1], k * v[2] };
-            return ans;
-        }
-
-        // Вычисляем v1 + v2.
-        public static double[] Add(double[] v1, double[] v2)
-        {
-            double[] ans = { v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2] };
-            return ans;
-        }
-
-        public static double[] Subtract(double[] v1, double[] v2)
-        {
-            double[] ans = { v1[0] - v2[0], v1[1] - v2[1], v1[2] - v2[2] };
-
-            return ans;
-        }
-
-        // матрица поворота на вектор
-        public static double[] MultiplyMV(double[,] mat, double[] vec)
-        {
-            double[] result = { 0, 0, 0 };
-
-            for (int i = 0; i < 3; i++)
-                for (int j = 0; j < 3; j++)
-                    result[i] += vec[j] * mat[i, j];
-
-            return result;
-
-        }
-
         // Проверочка.
         public static Color Clamp(double[] color)
         {
@@ -85,15 +40,15 @@ namespace CG
         // Отраженный относительно нормали вектор.
         public static double[] ReflectRay(double[] vector, double[] normal)
         {
-            return Subtract(Multiply(2 * DotProduct(vector, normal), normal), vector);
+            return MyMath.Subtract(MyMath.Multiply(2 * MyMath.DotProduct(vector, normal), normal), vector);
         }
 
         public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, 
                                              double[] view, Object myObject, double[] prevPoint, int flag)
         {
             double intensity = 0;
-            var length_n = Length(normal);  // Should be 1.0, but just in case...
-            var length_v = Length(view);
+            var length_n = MyMath.Length(normal);  // Should be 1.0, but just in case...
+            var length_v = MyMath.Length(view);
 
             double t_max = 1;
 
@@ -110,7 +65,7 @@ namespace CG
 
                     if (light is PointLight pointLight)
                     {
-                        vec_l = Subtract(pointLight.position, point);
+                        vec_l = MyMath.Subtract(pointLight.position, point);
 
                         t_max = 1;
                     }
@@ -118,38 +73,54 @@ namespace CG
                     if (light is DirectionalLight directionalLight) // check this
                     {
                         vec_l = directionalLight.direction;
-                        /*else
-                            vec_l = Subtract(prevPoint, point);*/
+
                         t_max = Double.PositiveInfinity;
                     }
 
-                    double n_dot_l = DotProduct(normal, vec_l);
+                    double n_dot_l = MyMath.DotProduct(normal, vec_l);
 
                     // Проверка тени
                     double tClosest = Double.PositiveInfinity;
                     Object closestObject = null;
 
-                    ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001, 
+                    ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001,
                                         t_max, flag); // fix eps
 
+                    // у прозрачных объектов нет тени  
                     if (closestObject != null)
                     {
+                        if (closestObject.transparent > 0)
+                        {
+                            /*if (intensity != 0)
+                            {
+                                intensity *= 1.1 + (closestObject.transparent - 1);
+                            }
+
+                            if (intensity == 0)
+                            {
+                                
+                            }*/
+                            
+                        }
+                                                   
                         continue;
+                                
                     }
+
 
                     // Диффузное отражение
                     if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                        intensity += light.intensity * n_dot_l / (length_n * Length(vec_l));
+                        intensity += light.intensity * n_dot_l / (length_n * MyMath.Length(vec_l));
 
                     // Зеркальное отражение
                     if (myObject.specular != -1)
                     {
                         var vec_r = ReflectRay(vec_l, normal);
-                        var r_dot_v = DotProduct(vec_r, view);
+                        var r_dot_v = MyMath.DotProduct(vec_r, view);
 
                         if (r_dot_v > 0)
                         {
-                            intensity += light.intensity * Math.Pow(r_dot_v / (Length(vec_r) * length_v), myObject.specular);
+                            intensity += light.intensity * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
                         }
                     }
                 }
@@ -171,9 +142,6 @@ namespace CG
         public static void ClosestIntersection(Object[] objects, ref double tClosest, ref Object closestObject, 
                                           double[] origin, double[] direction, double min_t, double max_t, int flag)
         {
-            tClosest = Double.PositiveInfinity;
-            closestObject = null;
-
             for (int i = 0; i < objects.Length; i++)
             {
                 double[] ts = { 0, 0 }; // здесь будут значения t_1, t_2, являющиеся искомыми (пересечение) 
@@ -200,11 +168,11 @@ namespace CG
 
         public static double[] IntersectRaySphere(double[] origin, double[] direction, Sphere sphere)
         {
-            double[] oc = Subtract(origin, sphere.center);
+            double[] oc = MyMath.Subtract(origin, sphere.center);
 
-            double k1 = DotProduct(direction, direction);
-            double k2 = 2 * DotProduct(oc, direction);
-            double k3 = DotProduct(oc, oc) - sphere.radius * sphere.radius;
+            double k1 = MyMath.DotProduct(direction, direction);
+            double k2 = 2 * MyMath.DotProduct(oc, direction);
+            double k3 = MyMath.DotProduct(oc, oc) - sphere.radius * sphere.radius;
 
             double discriminant = k2 * k2 - 4 * k1 * k3;
 
@@ -222,7 +190,6 @@ namespace CG
             return goodAns;
         }
 
-
         public static double[] TraceRay(int recursionDepth, Light[] lights, Object[] objects, double[] origin, 
                                     double[] direction, double min_t, double max_t, int flag)
         {
@@ -239,13 +206,15 @@ namespace CG
                 return background;
             }
 
-            double[] point = Add(origin, Multiply(tClosest, direction)); // вычисляем ближайшую точку пересечения лучем объекта
-            double[] pointEps = Add(origin, Multiply(tClosest + 0.001, direction));
+            // вычисляем ближайшую точку пересечения лучем объекта
+            double[] point = MyMath.Add(origin, MyMath.Multiply(tClosest, direction)); 
+            double[] pointEps = MyMath.Add(origin, MyMath.Multiply(tClosest + 0.001, direction));
 
-            double[] normal = Subtract(point, closestObject.center); // тут считается нормаль ONLY для сферы в точке point(см.выше)
+            // тут считается нормаль ONLY для сферы в точке point(см.выше)
+            double[] normal = MyMath.Subtract(point, closestObject.center); 
 
-            normal = Multiply(1.0 / Length(normal), normal); // нормализуем
-            var view = Multiply(-1, direction);
+            normal = MyMath.Multiply(1.0 / MyMath.Length(normal), normal); // нормализуем
+            var view = MyMath.Multiply(-1, direction);
 
             double[] newTransparentcolor = { 0, 0, 0 };
             double[] temp = { 0, 0, 0 };
@@ -255,25 +224,26 @@ namespace CG
             // Прозрачность
             if (closestObject.transparent > 0)
             {
+                //MyMath.Refract(ref direction, normal, closestObject.refraction);
                 newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, direction, 0.001, Double.PositiveInfinity, 1);
                 newFlag = 1;
             }
             
             
             // Локальный цвет
-            temp = Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
+            temp = MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
                                 closestObject.color);
             // вычисляем интенсивность в точке
             // и умножаем ее на RGB массив 
 
             if (newFlag == 1)
-                temp = Multiply(0.3, temp);
+                temp = MyMath.Multiply(0.3, temp);
 
 
 
             if (closestObject.reflective <= 0 || recursionDepth <= 0)
             {
-                double[] newTemp = Add(temp, Multiply(closestObject.transparent * 0.6, newTransparentcolor));
+                double[] newTemp = MyMath.Add(temp, MyMath.Multiply(closestObject.transparent * 0.6, newTransparentcolor));
                 return newTemp;
             }
 
@@ -282,10 +252,10 @@ namespace CG
             var reflected_color = TraceRay(recursionDepth - 1, lights, objects, point, reflected_ray, 
                                            0.001, Double.PositiveInfinity, 0); // fix eps
       
-            double[] test = Add(Multiply(1 - closestObject.reflective, temp),
-                   Multiply(closestObject.reflective, reflected_color));
+            double[] test = MyMath.Add(MyMath.Multiply(1 - closestObject.reflective, temp),
+                   MyMath.Multiply(closestObject.reflective, reflected_color));
 
-            return Add(test, Multiply(closestObject.transparent, newTransparentcolor));
+            return MyMath.Add(test, MyMath.Multiply(closestObject.transparent, newTransparentcolor));
         }
     } 
 }

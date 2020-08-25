@@ -14,13 +14,15 @@ namespace CG
         public double specular;
         public double reflective;
         public double transparent;
+        public double refraction;
     }
 
     class Sphere : Object
     {
         public double radius;
 
-        public Sphere(double[] center, double radius, double[] color, double specular, double reflective, double transparent)
+        public Sphere(double[] center, double radius, double[] color, 
+                      double specular, double reflective, double transparent, double refraction)
         {
             this.center = center;
             this.color = color;
@@ -28,6 +30,7 @@ namespace CG
             this.specular = specular;
             this.reflective = reflective;
             this.transparent = transparent;
+            this.refraction = refraction;
 
             Console.WriteLine("Sphere was a create");
         }
