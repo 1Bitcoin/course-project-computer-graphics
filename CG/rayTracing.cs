@@ -224,7 +224,7 @@ namespace CG
             // Прозрачность
             if (closestObject.transparent > 0)
             {
-                //MyMath.Refract(ref direction, normal, closestObject.refraction);
+                MyMath.Refract(ref direction, normal, closestObject.refraction);
                 newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, direction, 0.001, Double.PositiveInfinity, 1);
                 newFlag = 1;
             }
