@@ -20,7 +20,7 @@ namespace CG
 
                 return;
             }
-
+            
             map.SetPixel(x, y, color);
         }
 
@@ -128,12 +128,12 @@ namespace CG
             return intensity;
         }
 
-        public static double[] CanvasToViewport(Bitmap map, int[] p2d)
+        public static double[] CanvasToViewport(int width, int height, int[] p2d)
         {
             double viewportSize = 1;
             double projectionPlane_z = 1;
 
-            double[] ans = { p2d[0] * viewportSize / map.Width, p2d[1] * viewportSize / map.Height, projectionPlane_z };
+            double[] ans = { p2d[0] * viewportSize / width, p2d[1] * viewportSize / height, projectionPlane_z };
 
             return ans;
         }

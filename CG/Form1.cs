@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
+using System.Drawing.Imaging;
 
 namespace CG
 {
@@ -23,7 +25,7 @@ namespace CG
             InitializeComponent();
 
             result = new Bitmap(canvas.Width, canvas.Height);
-            g = Graphics.FromImage(result);
+            //g = Graphics.FromImage(result);
             canvas.Image = result;
 
             progressBar1.Maximum = result.Width * result.Height;
@@ -78,6 +80,7 @@ namespace CG
             //new Sphere(center2, 1, color1, 50, 0.2)
             //new Sphere(center3, 1, color3, 10, 0.4)
             //{ new Sphere(majorSphere, 1, color2, 1000, 0, 1),
+
             Object[] objects = { new Sphere(test, 1, orange, 1000, 0.5, 0, 1),
                  new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1.33),
                  new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1),
@@ -101,27 +104,102 @@ namespace CG
                                         }; //dell
 
             //c = Color.FromArgb(80, 20, 86, 20);
+
+            var rect = new Rectangle(0, 0, result.Width, result.Height);
+            var data = result.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, result.PixelFormat);
+            var depth = Bitmap.GetPixelFormatSize(data.PixelFormat) / 8; //bytes per pixel
+
+            var buffer = new byte[data.Width * data.Height * depth];
+
             Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
             time.Start(); // запускаем отсчёт времени
 
-            for (int x = -result.Width / 2; x < result.Width / 2; x++)
-            {
-                for (int y = -result.Height / 2; y < result.Height / 2; y++)
-                {
-                    int[] work = { x, y };
-                    double[] direction = RayTracing.CanvasToViewport(result, work);
-                    direction = MyMath.MultiplyMV(cameraRotationOY, direction);
-                    double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
-                    RayTracing.PutPixel(result, x, y, RayTracing.Clamp(color));
-                    //label1.Text = color.ToString();
-                    progressBar1.Value++;
+            //copy pixels to buffer
+            Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
+
+            Parallel.Invoke(
+                () => {
+                    //upper-left
+                    Process(buffer, 0, 0, data.Width / 2, data.Height / 2, data.Width, depth);
+                },
+                () => {
+                    //lower-right
+                    Process(buffer, data.Width / 2, data.Height / 2, data.Width, data.Height, data.Width, depth);
+                },
+                () => {
+                    //lower-right
+                    Process(buffer, data.Width / 2, 0, data.Width, data.Height / 2, data.Width, depth);
+                },
+                () => {
+                    //lower-right
+                    Process(buffer, 0, data.Height / 2, data.Width / 2, data.Height, data.Width, depth);
                 }
-            }
+            );
 
             time.Stop(); // останавливаем работу таймера
             label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
 
-            canvas.Refresh();
+            void Process(byte[] my_buffer, int x, int y, int endx, int endy, int width, int my_depth)
+            {
+                for (int i = x; i < endx; i++)
+                {
+                    for (int j = y; j < endy; j++)
+                    {
+                        int[] work = { i - data.Height / 2, j - data.Width / 2 };
+                        double[] direction = RayTracing.CanvasToViewport(data.Width, data.Height, work);
+                        direction = MyMath.MultiplyMV(cameraRotationOY, direction);
+                        double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
+
+                        var offset = (((j) * data.Width) + i) * depth;
+
+                        buffer[offset + 0] = (byte)color[2];
+                        buffer[offset + 1] = (byte)color[1];
+                        buffer[offset + 2] = (byte)color[0];
+
+                        //progressBar1.Value++;
+                    }
+                }
+
+            }
+
+            string outputFile = @"d:\GO.jpg";
+
+            Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
+
+            result.UnlockBits(data);
+
+            result.Save(outputFile, ImageFormat.Jpeg);
+
+            Bitmap image1 = new Bitmap(@"d:\GO.jpg", true);
+
+            canvas.Image = image1;
+
+            /*for (int x = 0; x < result.Width; x++)
+            {
+                for (int y = 0; y < result.Height; y++)
+                {
+                    int[] work = { x - result.Width / 2, y - result.Height / 2};
+                    double[] direction = RayTracing.CanvasToViewport(data.Width, data.Height, work);
+                    direction = MyMath.MultiplyMV(cameraRotationOY, direction);
+                    double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
+                    //RayTracing.PutPixel(result, x, y, RayTracing.Clamp(color));
+
+
+                    var offset = (((y) * data.Width) + x) * depth;
+                    // Dummy work    
+                    // To grayscale (0.2126 R + 0.7152 G + 0.0722 B)
+
+                    buffer[offset + 0] = (byte)color[2];
+                    buffer[offset + 1] = (byte)color[1];
+                    buffer[offset + 2] = (byte)color[0];
+                    
+
+
+
+                    //label1.Text = color.ToString();
+                    //progressBar1.Value++;
+                }
+            }*/
 
         }
 
@@ -179,6 +257,58 @@ namespace CG
 
         private void label5_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            string inputFile = @"d:\1.jpg";
+            string outputFile = @"d:\b.jpg";
+
+            Bitmap bmp = Bitmap.FromFile(inputFile) as Bitmap;
+
+            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
+            var data = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
+            var depth = Bitmap.GetPixelFormatSize(data.PixelFormat) / 8; //bytes per pixel
+
+            var buffer = new byte[data.Width * data.Height * depth];
+
+            //copy pixels to buffer
+            Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
+
+            Parallel.Invoke(
+                () => {
+            //upper-left
+            Process(buffer, 0, 0, data.Width / 2, data.Height / 2, data.Width, depth);
+                },
+                () => {
+            //lower-right
+            Process(buffer, data.Width / 2, data.Height / 2, data.Width, data.Height, data.Width, depth);
+                }
+            );
+
+            //Copy the buffer back to image
+            Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
+
+            bmp.UnlockBits(data);
+
+            bmp.Save(outputFile, ImageFormat.Jpeg);
+        }
+
+        void Process(byte[] buffer, int x, int y, int endx, int endy, int width, int depth)
+        {
+            for (int i = x; i < endx; i++)
+            {
+                for (int j = y; j < endy; j++)
+                {
+                    var offset = ((j * width) + i) * depth;
+                    // Dummy work    
+                    // To grayscale (0.2126 R + 0.7152 G + 0.0722 B)
+                    var b = 0.2126 * buffer[offset + 0] + 0.7152 * buffer[offset + 1] + 0.0722 * buffer[offset + 2];
+                    buffer[offset + 0] = buffer[offset + 1] = buffer[offset + 2] = (byte)b;
+                }
+            }
+
 
         }
     }
