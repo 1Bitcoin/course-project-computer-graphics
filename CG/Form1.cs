@@ -117,15 +117,15 @@ namespace CG
             //copy pixels to buffer
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            Parallel.Invoke(
+            /*Parallel.Invoke(
                 () => {
                     //upper-left
-                    Process(buffer, 0, 0, data.Width / 2, data.Height, data.Width, depth);
+                    Process(buffer, 0, 0, data.Width / 2, data.Height / 2, data.Width, depth);
                 },
                 () => {
                     //lower-right
-                    Process(buffer, data.Width / 2, 0, data.Width, data.Height, data.Width, depth);
-                }/*,
+                    Process(buffer, data.Width / 2, data.Height / 2, data.Width, data.Height, data.Width, depth);
+                },
                 () => {
                     //lower-right
                     Process(buffer, data.Width / 2, 0, data.Width, data.Height / 2, data.Width, depth);
@@ -133,12 +133,39 @@ namespace CG
                 () => {
                     //lower-right
                     Process(buffer, 0, data.Height / 2, data.Width / 2, data.Height, data.Width, depth);
-                }*/
-            );
+                }
+            );*/
 
+            int n = 1;
+            Thread[] t = new Thread[n];
 
-            void Process(byte[] my_buffer, int x, int y, int endx, int endy, int width, int my_depth)
+            int x1 = 0;
+            int y1 = 0;
+
+            int x2 = data.Width / 2;
+            int y2 = data.Height / 2;
+
+            for (int i = 0; i < n; i++)
             {
+                AllParameters p = new AllParameters(x1, y1, x2, y2);
+
+                t[i] = new Thread(Process);
+                t[i].Start(p);
+            }
+
+
+
+
+            void Process(object obj)
+            {
+                AllParameters p = (AllParameters)obj;
+
+                int x = p.x;
+                int y = p.y;
+
+                int endx = p.endx;
+                int endy = p.endy;
+
                 for (int i = x; i < endx; i++)
                 {
                     for (int j = y; j < endy; j++)
@@ -267,56 +294,5 @@ namespace CG
 
         }
 
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-            string inputFile = @"d:\1.jpg";
-            string outputFile = @"d:\b.jpg";
-
-            Bitmap bmp = Bitmap.FromFile(inputFile) as Bitmap;
-
-            var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
-            var data = bmp.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, bmp.PixelFormat);
-            var depth = Bitmap.GetPixelFormatSize(data.PixelFormat) / 8; //bytes per pixel
-
-            var buffer = new byte[data.Width * data.Height * depth];
-
-            //copy pixels to buffer
-            Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
-
-            Parallel.Invoke(
-                () => {
-            //upper-left
-            Process(buffer, 0, 0, data.Width / 2, data.Height / 2, data.Width, depth);
-                },
-                () => {
-            //lower-right
-            Process(buffer, data.Width / 2, data.Height / 2, data.Width, data.Height, data.Width, depth);
-                }
-            );
-
-            //Copy the buffer back to image
-            Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
-
-            bmp.UnlockBits(data);
-
-            bmp.Save(outputFile, ImageFormat.Jpeg);
-        }
-
-        void Process(byte[] buffer, int x, int y, int endx, int endy, int width, int depth)
-        {
-            for (int i = x; i < endx; i++)
-            {
-                for (int j = y; j < endy; j++)
-                {
-                    var offset = ((j * width) + i) * depth;
-                    // Dummy work    
-                    // To grayscale (0.2126 R + 0.7152 G + 0.0722 B)
-                    var b = 0.2126 * buffer[offset + 0] + 0.7152 * buffer[offset + 1] + 0.0722 * buffer[offset + 2];
-                    buffer[offset + 0] = buffer[offset + 1] = buffer[offset + 2] = (byte)b;
-                }
-            }
-
-
-        }
     }
 }

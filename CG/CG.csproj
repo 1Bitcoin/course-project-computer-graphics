@@ -49,6 +49,7 @@
     <Compile Include="Light.cs" />
     <Compile Include="MyMath.cs" />
     <Compile Include="Objects.cs" />
+    <Compile Include="ParallelCalculate.cs" />
     <Compile Include="RayTracing.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
