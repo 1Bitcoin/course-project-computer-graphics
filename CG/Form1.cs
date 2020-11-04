@@ -117,25 +117,6 @@ namespace CG
             //copy pixels to buffer
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            /*Parallel.Invoke(
-                () => {
-                    //upper-left
-                    Process(buffer, 0, 0, data.Width / 2, data.Height / 2, data.Width, depth);
-                },
-                () => {
-                    //lower-right
-                    Process(buffer, data.Width / 2, data.Height / 2, data.Width, data.Height, data.Width, depth);
-                },
-                () => {
-                    //lower-right
-                    Process(buffer, data.Width / 2, 0, data.Width, data.Height / 2, data.Width, depth);
-                },
-                () => {
-                    //lower-right
-                    Process(buffer, 0, data.Height / 2, data.Width / 2, data.Height, data.Width, depth);
-                }
-            );*/
-
             int n = 6;
 
             int step = data.Width / n;
@@ -220,32 +201,8 @@ namespace CG
             canvas.Refresh();
 
             time.Stop(); // останавливаем работу таймера
-            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
-
-            
-            /*Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
-            time.Start(); // запускаем отсчёт времени
-
-            for (int x = -result.Width / 2; x < result.Width / 2; x++)
-            {
-                for (int y = -result.Height / 2; y < result.Height / 2; y++)
-                {
-                    int[] work = { x, y };
-                    double[] direction = RayTracing.CanvasToViewport(result.Width, result.Height, work);
-                    direction = MyMath.MultiplyMV(cameraRotationOY, direction);
-                    double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
-                    RayTracing.PutPixel(result, x, y, RayTracing.Clamp(color));
-
-                }
-            }
-
-            canvas.Image = result;
-            time.Stop(); // останавливаем работу таймера
-            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
-            */
+            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время         
         }
-
-
 
         private void canvas_Click(object sender, EventArgs e)
         {
