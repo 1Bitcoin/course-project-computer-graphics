@@ -12,24 +12,24 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace CG
 {
     public partial class Form1 : Form
     {
         Bitmap result;
-        Graphics g;
+        int flag = 0;
 
         public Form1()
         {
             InitializeComponent();
 
             result = new Bitmap(canvas.Width, canvas.Height);
-            //g = Graphics.FromImage(result);
-            canvas.Image = result;
 
             progressBar1.Maximum = result.Width * result.Height;
             progressBar1.Value = 0;
+            
 
         }
 
@@ -120,12 +120,12 @@ namespace CG
             Parallel.Invoke(
                 () => {
                     //upper-left
-                    Process(buffer, 0, 0, data.Width / 2, data.Height / 2, data.Width, depth);
+                    Process(buffer, 0, 0, data.Width / 2, data.Height, data.Width, depth);
                 },
                 () => {
                     //lower-right
-                    Process(buffer, data.Width / 2, data.Height / 2, data.Width, data.Height, data.Width, depth);
-                },
+                    Process(buffer, data.Width / 2, 0, data.Width, data.Height, data.Width, depth);
+                }/*,
                 () => {
                     //lower-right
                     Process(buffer, data.Width / 2, 0, data.Width, data.Height / 2, data.Width, depth);
@@ -133,11 +133,9 @@ namespace CG
                 () => {
                     //lower-right
                     Process(buffer, 0, data.Height / 2, data.Width / 2, data.Height, data.Width, depth);
-                }
+                }*/
             );
 
-            time.Stop(); // останавливаем работу таймера
-            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
 
             void Process(byte[] my_buffer, int x, int y, int endx, int endy, int width, int my_depth)
             {
@@ -146,61 +144,70 @@ namespace CG
                     for (int j = y; j < endy; j++)
                     {
                         int[] work = { i - data.Height / 2, j - data.Width / 2 };
+
                         double[] direction = RayTracing.CanvasToViewport(data.Width, data.Height, work);
                         direction = MyMath.MultiplyMV(cameraRotationOY, direction);
+
                         double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
 
-                        var offset = (((j) * data.Width) + i) * depth;
+                        var offset = ((j * data.Width) + i) * depth;
 
                         buffer[offset + 0] = (byte)color[2];
                         buffer[offset + 1] = (byte)color[1];
                         buffer[offset + 2] = (byte)color[0];
-
-                        //progressBar1.Value++;
                     }
                 }
 
             }
 
-            string outputFile = @"d:\GO.jpg";
+            result.UnlockBits(data);
+
+            string outputFile1 = @"d:\GO1.bmp";
+            string outputFile2 = @"d:\GO2.bmp";
 
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
 
-            result.UnlockBits(data);
-
-            result.Save(outputFile, ImageFormat.Jpeg);
-
-            Bitmap image1 = new Bitmap(@"d:\GO.jpg", true);
-
-            canvas.Image = image1;
-
-            /*for (int x = 0; x < result.Width; x++)
+            if (flag == 0)
             {
-                for (int y = 0; y < result.Height; y++)
+                result.Save(outputFile1, ImageFormat.Bmp);
+                result = Bitmap.FromFile(outputFile1) as Bitmap;
+                flag = 1;
+            }
+            else
+            {
+                result.Save(outputFile2, ImageFormat.Bmp);
+                result = Bitmap.FromFile(outputFile2) as Bitmap;
+                flag = 0;
+            }
+
+            canvas.Image = result;
+            canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
+            canvas.Refresh();
+
+            time.Stop(); // останавливаем работу таймера
+            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
+
+            
+            /*Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
+            time.Start(); // запускаем отсчёт времени
+
+            for (int x = -result.Width / 2; x < result.Width / 2; x++)
+            {
+                for (int y = -result.Height / 2; y < result.Height / 2; y++)
                 {
-                    int[] work = { x - result.Width / 2, y - result.Height / 2};
-                    double[] direction = RayTracing.CanvasToViewport(data.Width, data.Height, work);
+                    int[] work = { x, y };
+                    double[] direction = RayTracing.CanvasToViewport(result.Width, result.Height, work);
                     direction = MyMath.MultiplyMV(cameraRotationOY, direction);
                     double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
-                    //RayTracing.PutPixel(result, x, y, RayTracing.Clamp(color));
+                    RayTracing.PutPixel(result, x, y, RayTracing.Clamp(color));
 
-
-                    var offset = (((y) * data.Width) + x) * depth;
-                    // Dummy work    
-                    // To grayscale (0.2126 R + 0.7152 G + 0.0722 B)
-
-                    buffer[offset + 0] = (byte)color[2];
-                    buffer[offset + 1] = (byte)color[1];
-                    buffer[offset + 2] = (byte)color[0];
-                    
-
-
-
-                    //label1.Text = color.ToString();
-                    //progressBar1.Value++;
                 }
-            }*/
+            }
 
+            canvas.Image = result;
+            time.Stop(); // останавливаем работу таймера
+            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время
+            */
         }
 
 
