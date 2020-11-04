@@ -136,25 +136,33 @@ namespace CG
                 }
             );*/
 
-            int n = 1;
+            int n = 6;
+
+            int step = data.Width / n;
+
             Thread[] t = new Thread[n];
-
+       
             int x1 = 0;
+            int x2 = step;
+
             int y1 = 0;
-
-            int x2 = data.Width / 2;
-            int y2 = data.Height / 2;
-
+            int y2 = data.Height;
+         
             for (int i = 0; i < n; i++)
             {
                 AllParameters p = new AllParameters(x1, y1, x2, y2);
 
                 t[i] = new Thread(Process);
                 t[i].Start(p);
+
+                x1 = x2;
+                x2 += step; 
             }
 
-
-
+            foreach (Thread thread in t)
+            {
+                thread.Join();
+            }
 
             void Process(object obj)
             {
