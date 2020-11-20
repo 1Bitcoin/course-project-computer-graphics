@@ -42,6 +42,9 @@ namespace CG
         {
             progressBar1.Value = 0;
 
+            Bitmap texture = Image.FromFile(@"d:\earth.png") as Bitmap;
+            Bitmap texture1 = Image.FromFile(@"d:\1.bmp") as Bitmap;
+
             double[] cameraPosition = { Int32.Parse(textBox2.Text), Int32.Parse(textBox3.Text), Int32.Parse(textBox4.Text) };
 
             double[] eye1 = { 0.05, 0.17, 2.92 };
@@ -70,6 +73,12 @@ namespace CG
             double[] color4 = { 255, 255, 0 };
 
             double[] poslight = { 2, 2, -1 };
+
+            double[] poslight5 = { 2, 2.2, -1 };
+            double[] poslight6 = { 2, 2.5, -1 };
+            double[] poslight7 = { 2, 2.3, -1 };
+
+
             double[] poslight1 = { -1, 1, 3 };
             double[] poslight2 = { 0, 5, 4 };
 
@@ -77,30 +86,52 @@ namespace CG
 
             int recursionDepth = 5;
 
+            /*double[][] myTriangle =
+            {
+                new double[] { -100, 0, -100 },
+                new double[] { -100, 0, 100 },
+                new double[] { 100 , 0, -100}
+            };*/
+
+            double[][] myTriangle =
+{
+                new double[] { -1000, -1, -1000 },
+                new double[] { -1000, -1, 1000 },
+                new double[] { 1000, -1, 0}
+            };
+
             //new Sphere(center2, 1, color1, 50, 0.2)
             //new Sphere(center3, 1, color3, 10, 0.4)
             //{ new Sphere(majorSphere, 1, color2, 1000, 0, 1),
 
-            Object[] objects = { new Sphere(test, 1, orange, 1000, 0.5, 0, 1),
-                 new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1.33),
-                 new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1),
-                 new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1), new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1),
-                 new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1),
-                 new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1), new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1),
-                 new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1), /*new Sphere(test, 1, color3, 1000, 0.5, 0, 1),*/
-                 new Sphere(plane, 5000, color4, 1000, 0.5, 0, 1),
+            Object[] objects = { new Sphere(test, 1, orange, 1000, 0.5, 0, 1, texture),
+                 new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1.33, null),
+                 new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
+                 new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null), new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
+                 new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1, null),
+                 new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null), new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
+                 new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null)/*,
+                 new Sphere(plane, 5000, color4, 1000, 0.5, 0, 1, null)*/, new Triangle(myTriangle, orange, 0.1, 0.5, 0, 0, texture1)
 
                  /*new Sphere(behindMajorsphere, 1, color2, 1000, 0, 1, 1.33)*/ };
 
-            Light[] lights = { new AmbientLight(0.4), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2) };
+            Light[] lights = { new AmbientLight(0.1), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2),
+                new PointLight(poslight5, 0.1), new PointLight(poslight6, 0.1), new PointLight(poslight7, 0.1)};
             //new PointLight(poslight, 0.6)
 
-            int angle = Int32.Parse(textBox1.Text);
+            int angleY = Int32.Parse(textBox1.Text);
+            int angleX = Int32.Parse(textBox5.Text);
 
             double[,] cameraRotationOY = { 
-                                        { Math.Cos(Math.PI * angle / 180.0), 0, Math.Sin(Math.PI * angle / 180.0) }, 
+                                        { Math.Cos(Math.PI * angleY / 180.0), 0, Math.Sin(Math.PI * angleY / 180.0) }, 
                                         { 0, 1, 0 },
-                                        { -Math.Sin(Math.PI * angle / 180.0), 0, Math.Cos(Math.PI * angle / 180.0)}
+                                        { -Math.Sin(Math.PI * angleY / 180.0), 0, Math.Cos(Math.PI * angleY / 180.0)}
+                                        }; //dell
+
+            double[,] cameraRotationOX = {
+                                        { 1, 0, 0 },
+                                        { 0, Math.Cos(Math.PI * angleX / 180.0), -Math.Sin(Math.PI * angleX / 180.0) },
+                                        { 0, Math.Sin(Math.PI * angleX / 180.0), Math.Cos(Math.PI * angleX / 180.0)}
                                         }; //dell
 
             //c = Color.FromArgb(80, 20, 86, 20);
@@ -117,7 +148,7 @@ namespace CG
             //copy pixels to buffer
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            int n = 6;
+            int n = 1;
 
             int step = data.Width / n;
 
@@ -163,6 +194,7 @@ namespace CG
 
                         double[] direction = RayTracing.CanvasToViewport(data.Width, data.Height, work);
                         direction = MyMath.MultiplyMV(cameraRotationOY, direction);
+                        direction = MyMath.MultiplyMV(cameraRotationOX, direction);
 
                         double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
 
@@ -259,5 +291,14 @@ namespace CG
 
         }
 
+        private void label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label11_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

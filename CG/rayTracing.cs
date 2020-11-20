@@ -86,7 +86,7 @@ namespace CG
                     ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001,
                                         t_max, flag); // fix eps
 
-                    // у прозрачных объектов нет тени  
+                    // у прозрачных объектов нет тени (должна быть, зависит от прозрачности!)
                     if (closestObject != null)
                     {
                         if (closestObject.transparent > 0)
@@ -151,6 +151,10 @@ namespace CG
                     if (flag != 1 || sphere.transparent <= 0)
                         ts = IntersectRaySphere(origin, direction, sphere);
 
+                if (objects[i] is Triangle triangle)
+                    if (flag != 1 || triangle.transparent <= 0)
+                        ts = IntersectRayTriangle(origin, direction, triangle);
+
                 // поиск ближайшей точки пересечения луча с объектом
                 if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
                 {
@@ -190,6 +194,47 @@ namespace CG
             return goodAns;
         }
 
+        public static double[] IntersectRayTriangle(double[] origin, double[] direction, Triangle triangle)
+        {
+            double[] answer = { Double.PositiveInfinity, Double.PositiveInfinity };
+            double[] pvec = MyMath.Cross(direction, triangle.side2);
+            double det = MyMath.DotProduct(triangle.side1, pvec);
+
+            double eps = 1e-6;
+
+            if (det < eps && det > -eps)           
+                return answer;
+            
+            double inv_det = 1.0 / det;
+            double[] tvec = MyMath.Subtract(origin, triangle.points[0]);
+            double u = inv_det * MyMath.DotProduct(tvec, pvec);
+
+            if (u < 0 || u > 1)
+                return answer;
+
+            double[] qvec = MyMath.Cross(tvec, triangle.side1);
+            double v = MyMath.DotProduct(direction, qvec) * inv_det;
+
+            if (v < 0 || u + v > 1)          
+                return answer;
+
+            double t = MyMath.DotProduct(triangle.side2, qvec) * inv_det;
+
+            answer[0] = t;
+            answer[1] = t;
+
+            triangle.u = u;
+            triangle.v = v;
+
+            return answer;
+        }
+
+        public static double[] ComputeNormalTriangle(Triangle triangle)
+        {
+            double[] normal = MyMath.Cross(triangle.side1, triangle.side2);
+            return normal;
+        }
+
         public static double[] TraceRay(int recursionDepth, Light[] lights, Object[] objects, double[] origin, 
                                     double[] direction, double min_t, double max_t, int flag)
         {
@@ -210,10 +255,56 @@ namespace CG
             double[] point = MyMath.Add(origin, MyMath.Multiply(tClosest, direction)); 
             double[] pointEps = MyMath.Add(origin, MyMath.Multiply(tClosest + 0.001, direction));
 
+            double[] normal = { 0, 0, 0 };
             // тут считается нормаль ONLY для сферы в точке point(см.выше)
-            double[] normal = MyMath.Subtract(point, closestObject.center); 
+            if (closestObject is Sphere sphere)
+            {
+                normal = MyMath.Subtract(point, closestObject.center);
+                normal = MyMath.Multiply(1.0 / MyMath.Length(normal), normal); // нормализуем
 
-            normal = MyMath.Multiply(1.0 / MyMath.Length(normal), normal); // нормализуем
+                if (sphere.texture != null)
+                {
+                    double u = 0.5 + Math.Atan2(normal[2], normal[0]) / (2 * Math.PI);
+
+                    double v = 0.5 - Math.Asin(normal[1]) / Math.PI;
+
+                    double width = u * closestObject.texture.Width;
+                    double height = v * closestObject.texture.Height;
+
+                    Color textureColor = closestObject.texture.GetPixel((int)width, (int)height);
+
+                    byte r = textureColor.R;
+                    byte g = textureColor.G;
+                    byte b = textureColor.B;
+
+                    double[] res_color = { r, g, b };
+
+                    return res_color;
+                }
+            }
+
+            if (closestObject is Triangle triangle)
+            {
+                normal = ComputeNormalTriangle(triangle);
+
+                if (triangle.texture != null)
+                {
+                    double width = triangle.u * triangle.texture.Width / 2;
+                    double height = triangle.v * triangle.texture.Height / 2;
+
+                    Color textureColor = triangle.texture.GetPixel((int)width, (int)height);
+
+                    byte r = textureColor.R;
+                    byte g = textureColor.G;
+                    byte b = textureColor.B;
+
+                    double[] res_color = { r, g, b };
+
+                    return res_color;
+                }
+            }          
+
+
             var view = MyMath.Multiply(-1, direction);
 
             double[] newTransparentcolor = { 0, 0, 0 };

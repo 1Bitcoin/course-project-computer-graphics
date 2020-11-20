@@ -69,6 +69,19 @@ namespace CG
             return Math.Sqrt(DotProduct(v, v));
         }
 
+        // Перекрестное умножение векторов
+        public static double[] Cross(double[] A, double[] B)
+        {
+            double resultX = A[1] * B[2] - A[2] * B[1];
+            double resultY = A[2] * B[0] - A[0] * B[2];
+            double resultZ = A[0] * B[1] - A[1] * B[0];
+
+            double[] result = { resultX, resultY, resultZ };
+
+            return result;
+        }
+
+
         // Вычисляем k * vec.
         public static double[] Multiply(double k, double[] v)
         {

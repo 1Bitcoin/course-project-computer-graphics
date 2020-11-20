@@ -15,6 +15,7 @@ namespace CG
         public double reflective;
         public double transparent;
         public double refraction;
+        public Bitmap texture;
     }
 
     class Sphere : Object
@@ -22,7 +23,7 @@ namespace CG
         public double radius;
 
         public Sphere(double[] center, double radius, double[] color, 
-                      double specular, double reflective, double transparent, double refraction)
+                      double specular, double reflective, double transparent, double refraction, Bitmap texture)
         {
             this.center = center;
             this.color = color;
@@ -31,8 +32,38 @@ namespace CG
             this.reflective = reflective;
             this.transparent = transparent;
             this.refraction = refraction;
+            this.texture = texture;
 
             Console.WriteLine("Sphere was a create");
+        }
+    }
+
+    class Triangle : Object
+    {
+        public double[][] points;
+        public double[] side1;
+        public double[] side2;
+
+        public double u;
+        public double v;
+
+        public Triangle(double[][] points, double[] color, double specular, double reflective, double transparent, double refraction, Bitmap texture)
+        {
+            this.center = points[0];
+            this.points = points;
+            this.color = color;
+            this.specular = specular;
+            this.reflective = reflective;
+            this.transparent = transparent;
+            this.refraction = refraction;
+            this.texture = texture;
+            this.u = 0;
+            this.v = 0;
+
+            this.side1 = MyMath.Subtract(points[1], points[0]);
+            this.side2 = MyMath.Subtract(points[2], points[0]);
+
+            Console.WriteLine("Triangle was a create");
         }
     }
 }
