@@ -80,7 +80,7 @@ namespace CG
 
 
             double[] poslight1 = { -1, 1, 3 };
-            double[] poslight2 = { 0, 5, 4 };
+            double[] poslight2 = { 0, 5, -10 };
 
             double[] directionlight = { 0, 0, -2 };
 
@@ -94,26 +94,52 @@ namespace CG
             };*/
 
             double[][] myTriangle =
-{
+            {
                 new double[] { -1000, -1, -1000 },
                 new double[] { -1000, -1, 1000 },
                 new double[] { 1000, -1, 0}
             };
 
+
+            double[][] myTriangle1 =
+            {
+                new double[] { 0.91653049, 2.983851, -1.7062331 },
+                new double[] { -3.198668, -0.82877064, -1.7062331 },
+                new double[] { -3.198668, 2.983851, -1.7062331 }
+            };
+
+            double[][] myTriangle2 =
+{
+                new double[] { 0.91653049, 2.983851, -1.7062331 },
+                new double[] { -3.198668, -0.82877064, -1.7062331 },
+                new double[] { 0.91653049, -0.82877064, -1.7062331 }
+            };
+
+            //consoDouble.TryParse("1.1")
+
+
             //new Sphere(center2, 1, color1, 50, 0.2)
             //new Sphere(center3, 1, color3, 10, 0.4)
             //{ new Sphere(majorSphere, 1, color2, 1000, 0, 1),
 
-            Object[] objects = { new Sphere(test, 1, orange, 1000, 0.5, 0, 1, texture),
-                 new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1.33, null),
-                 new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
-                 new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null), new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
-                 new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1, null),
-                 new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null), new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
-                 new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null)/*,
-                 new Sphere(plane, 5000, color4, 1000, 0.5, 0, 1, null)*/, new Triangle(myTriangle, orange, 0.1, 0.5, 0, 0, texture1)
+            //var objects = new List<Object>() { };
 
-                 /*new Sphere(behindMajorsphere, 1, color2, 1000, 0, 1, 1.33)*/ };
+            var objects = new List<Object>() { new Sphere(test, 1, orange, 1000, 0.5, 0, 1, texture),
+                                               new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1.33, null),
+                                               new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
+                                               new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
+                                               new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
+                                               new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1, null),
+                                               new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
+                                               new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
+                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),
+                                               new Triangle(myTriangle, orange, 0.1, 0.5, 0, 0, null)
+
+
+            };
+
+            //LoaderFile.Load();
+            //LoaderFile.InitializingTriangles(objects);
 
             Light[] lights = { new AmbientLight(0.1), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2),
                 new PointLight(poslight5, 0.1), new PointLight(poslight6, 0.1), new PointLight(poslight7, 0.1)};

@@ -43,7 +43,7 @@ namespace CG
             return MyMath.Subtract(MyMath.Multiply(2 * MyMath.DotProduct(vector, normal), normal), vector);
         }
 
-        public static double ComputeLighting(Object[] objects, Light[] lights, double[] point, double[] normal, 
+        public static double ComputeLighting(List<Object> objects, Light[] lights, double[] point, double[] normal, 
                                              double[] view, Object myObject, double[] prevPoint, int flag)
         {
             double intensity = 0;
@@ -139,10 +139,10 @@ namespace CG
         }
 
         // Поиск ближайшего пересечения между объектом и лучом.
-        public static void ClosestIntersection(Object[] objects, ref double tClosest, ref Object closestObject, 
+        public static void ClosestIntersection(List<Object> objects, ref double tClosest, ref Object closestObject, 
                                           double[] origin, double[] direction, double min_t, double max_t, int flag)
         {
-            for (int i = 0; i < objects.Length; i++)
+            for (int i = 0; i < objects.Count; i++)
             {
                 double[] ts = { 0, 0 }; // здесь будут значения t_1, t_2, являющиеся искомыми (пересечение) 
                                         // P = O + t * direction
@@ -235,7 +235,7 @@ namespace CG
             return normal;
         }
 
-        public static double[] TraceRay(int recursionDepth, Light[] lights, Object[] objects, double[] origin, 
+        public static double[] TraceRay(int recursionDepth, Light[] lights, List<Object> objects, double[] origin, 
                                     double[] direction, double min_t, double max_t, int flag)
         {
             //int[] flags = new int[recursionDepth];
@@ -289,8 +289,8 @@ namespace CG
 
                 if (triangle.texture != null)
                 {
-                    double width = triangle.u * triangle.texture.Width / 2;
-                    double height = triangle.v * triangle.texture.Height / 2;
+                    double width = triangle.u * triangle.texture.Width;
+                    double height = triangle.v * triangle.texture.Height;
 
                     Color textureColor = triangle.texture.GetPixel((int)width, (int)height);
 

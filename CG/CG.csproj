@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LoaderFile.cs" />
     <Compile Include="Light.cs" />
     <Compile Include="MyMath.cs" />
     <Compile Include="Objects.cs" />
