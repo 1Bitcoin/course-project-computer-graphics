@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace CG
 {
@@ -31,24 +32,21 @@ namespace CG
 
         public static void Load()
         {
-            string[] lines = File.ReadAllLines(@"D:\14.obj");
+            string[] lines = File.ReadAllLines(@"D:\12.obj");
             foreach (string line in lines)
             {
                 // строки с вершинами
                 if (line.ToLower().StartsWith("v "))
                 {
-                    double[] vx = ConvertString(line);
+                    double[] vx = ConvertDoubleString(line);
                     Console.Write(vx);
-                    vertices.Add(new Vertex(200 * vx[0], 200 * vx[1], 200 * vx[2]));
+                    vertices.Add(new Vertex(vx[0], vx[1], vx[2]));
 
                 }
                 // строки с номерами
                 else if (line.ToLower().StartsWith("f"))
                 {
-                    var vx = line.Split(' ')
-                        .Skip(1)
-                        .Select(v => Int32.Parse(v))
-                        .ToArray();
+                    int[] vx = ConvertIntString(line);
                     polygons.Add(new Tuple<int, int, int>(vx[0], vx[1], vx[2]));
                     numbersPolygons++;
                 }
@@ -66,57 +64,43 @@ namespace CG
                 int index2 = polygons[i].Item2 - 1;
                 int index3 = polygons[i].Item3 - 1;
 
-                /*Console.WriteLine(index1 + 1);
-                Console.WriteLine(index2 + 1);
-                Console.WriteLine(index3 + 1);*/
-
                 double[][] coordTriangle = {
                                             new double[] { vertices[index1].X, vertices[index1].Y, vertices[index1].Z },
                                             new double[] { vertices[index2].X, vertices[index2].Y, vertices[index2].Z },
                                             new double[] { vertices[index3].X, vertices[index3].Y, vertices[index3].Z }
                 };
-
-                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 0, 0, null));
-                /*Console.WriteLine("triangle: ");
-                Console.Write(vertices[index1].X);
-                Console.Write(" ");
-
-                Console.Write(vertices[index1].Y);
-                Console.Write(" ");
-
-                Console.Write(vertices[index1].Z);
-                Console.Write(" ");*/
-
-
-                /*Console.Write(vertices[index2].X);
-                Console.Write(" ");
-
-                Console.Write(vertices[index2].Y);
-                Console.Write(" ");
-
-                Console.Write(vertices[index2].Z);
-                Console.Write(" ");
-
-
-                Console.Write(vertices[index3].X);
-                Console.Write(" ");
-
-                Console.Write(vertices[index3].Y);
-                Console.Write(" ");
-
-                Console.Write(vertices[index3].Z);
-                Console.Write(" ");*/
-
-            
-                Console.WriteLine();
-
-
+                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 1, 1, null));
             }
             
             numbersPolygons = 0;
         }
 
-        public static double[] ConvertString(string s)
+        public static int[] ConvertIntString(string s)
+        {
+            int i = 0;
+
+            while (s[i] == 'f' || s[i] == ' ')
+            {
+                i++;
+            }
+
+            s = s.Substring(i);
+
+            string pattern = @"//\d*";
+            string target = "";
+
+            Regex regex = new Regex(pattern);
+            s = regex.Replace(s, target);
+
+            var splitedString = s.Split(' ');
+
+            int[] answer = { Convert.ToInt16(splitedString[0]), Convert.ToInt16(splitedString[1]), Convert.ToInt16(splitedString[2]) };
+
+            return answer;
+        }
+
+
+        public static double[] ConvertDoubleString(string s)
         {
             int i = 0;
 

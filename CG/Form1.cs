@@ -66,6 +66,7 @@ namespace CG
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
             double[] snow = { 255, 255, 255 };
+            double[] red = { 255, 0, 0 };
 
             double[] color1 = { 254, 239, 210 };
             double[] color2 = { 240, 240, 240 };
@@ -124,8 +125,8 @@ namespace CG
 
             //var objects = new List<Object>() { };
 
-            var objects = new List<Object>() { new Sphere(test, 1, orange, 1000, 0.5, 0, 1, texture),
-                                               new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1.33, null),
+            var objects = new List<Object>() { new Sphere(test, 1, red, 1000, 0.5, 0, 1, null),
+                                               new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
@@ -138,8 +139,8 @@ namespace CG
 
             };
 
-            //LoaderFile.Load();
-            //LoaderFile.InitializingTriangles(objects);
+            LoaderFile.Load();
+            LoaderFile.InitializingTriangles(objects);
 
             Light[] lights = { new AmbientLight(0.1), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2),
                 new PointLight(poslight5, 0.1), new PointLight(poslight6, 0.1), new PointLight(poslight7, 0.1)};
@@ -174,7 +175,7 @@ namespace CG
             //copy pixels to buffer
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            int n = 1;
+            int n = 4;
 
             int step = data.Width / n;
 
