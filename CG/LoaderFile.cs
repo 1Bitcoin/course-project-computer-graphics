@@ -32,7 +32,7 @@ namespace CG
 
         public static void Load()
         {
-            string[] lines = File.ReadAllLines(@"D:\12.obj");
+            string[] lines = File.ReadAllLines(@"D:\16.obj");
             foreach (string line in lines)
             {
                 // строки с вершинами
@@ -69,7 +69,7 @@ namespace CG
                                             new double[] { vertices[index2].X, vertices[index2].Y, vertices[index2].Z },
                                             new double[] { vertices[index3].X, vertices[index3].Y, vertices[index3].Z }
                 };
-                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 1, 1, null));
+                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 0, 0, null));
             }
             
             numbersPolygons = 0;

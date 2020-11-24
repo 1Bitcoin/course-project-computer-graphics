@@ -66,4 +66,16 @@ namespace CG
             Console.WriteLine("Triangle was a create");
         }
     }
+
+    class Ray
+    {
+        public double[] origin;
+        public double[] direcion;
+
+        public Ray(double[] origin, double[] direcion)
+        {
+            this.origin = origin;
+            this.direcion = direcion;
+        }
+    }
 }

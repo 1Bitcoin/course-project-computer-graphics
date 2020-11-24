@@ -61,7 +61,8 @@ namespace CG
             double[] plane = { 0, -5001, 0 };
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
-            double[] test = { -2.1, 0.5, 3 };
+            double[] test = { 0, 0.5, 6 };
+            double[] test1 = { 0, 8, 6 };
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
@@ -73,7 +74,7 @@ namespace CG
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
 
-            double[] poslight = { 2, 2, -1 };
+            double[] poslight = { 2, 2, 0 };
 
             double[] poslight5 = { 2, 2.2, -1 };
             double[] poslight6 = { 2, 2.5, -1 };
@@ -81,7 +82,6 @@ namespace CG
 
 
             double[] poslight1 = { -1, 1, 3 };
-            double[] poslight2 = { 0, 5, -10 };
 
             double[] directionlight = { 0, 0, -2 };
 
@@ -110,10 +110,17 @@ namespace CG
             };
 
             double[][] myTriangle2 =
-{
+            {
                 new double[] { 0.91653049, 2.983851, -1.7062331 },
                 new double[] { -3.198668, -0.82877064, -1.7062331 },
                 new double[] { 0.91653049, -0.82877064, -1.7062331 }
+            };
+
+            double[][] postriangle =
+            {
+                new double[] { 3, 4, 6 },
+                new double[] { -2, 4, 2 },
+                new double[] { 0, 4, 0 }
             };
 
             //consoDouble.TryParse("1.1")
@@ -125,7 +132,10 @@ namespace CG
 
             //var objects = new List<Object>() { };
 
-            var objects = new List<Object>() { new Sphere(test, 1, red, 1000, 0.5, 0, 1, null),
+            var objects = new List<Object>() { new Sphere(test, 1, red, 0, 0, 0, 0, null),
+                                               new Triangle(myTriangle, orange, 0, 0, 0, 0, null),
+                                               /*new Sphere(test1, 2, snow, 0, 0, 0, 0, null),
+                                               
                                                new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
@@ -134,17 +144,16 @@ namespace CG
                                                new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
                                                new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
                                                new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),
-                                               new Triangle(myTriangle, orange, 0.1, 0.5, 0, 0, null)
+                                               */
 
 
             };
 
-            LoaderFile.Load();
-            LoaderFile.InitializingTriangles(objects);
+            //LoaderFile.Load();
+            //LoaderFile.InitializingTriangles(objects);
 
-            Light[] lights = { new AmbientLight(0.1), new PointLight(poslight, 0.2), new PointLight(poslight1, 0.2), new PointLight(poslight2, 0.2),
-                new PointLight(poslight5, 0.1), new PointLight(poslight6, 0.1), new PointLight(poslight7, 0.1)};
-            //new PointLight(poslight, 0.6)
+            Light[] lights = { new AmbientLight(0.1), new LightSphere(test1, 6, 0.7) //new PointLight(test1, 0.3)
+                };
 
             int angleY = Int32.Parse(textBox1.Text);
             int angleX = Int32.Parse(textBox5.Text);

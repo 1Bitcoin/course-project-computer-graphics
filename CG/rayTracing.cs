@@ -77,57 +77,182 @@ namespace CG
                         t_max = Double.PositiveInfinity;
                     }
 
-                    double n_dot_l = MyMath.DotProduct(normal, vec_l);
-
-                    // Проверка тени
-                    double tClosest = Double.PositiveInfinity;
-                    Object closestObject = null;
-
-                    ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001,
-                                        t_max, flag); // fix eps
-
-                    // у прозрачных объектов нет тени (должна быть, зависит от прозрачности!)
-                    if (closestObject != null)
+                    if (light is LightSphere lightsphere)
                     {
-                        if (closestObject.transparent > 0)
+                        List<Ray> result = generateSphereRaySet(point, lightsphere);
+
+                        for (int j = 0; j < result.Count; j++)
                         {
-                            /*if (intensity != 0)
-                            {
-                                intensity *= 1.1 + (closestObject.transparent - 1);
-                            }
+                            double[] vector = result[j].direcion;
+                        
+                            ComputeColor(objects, light, point, normal, view, myObject, 
+                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v);
 
-                            if (intensity == 0)
-                            {
-                                
-                            }*/
-                            
-                        }
-                                                   
-                        continue;
-                                
-                    }
-
-
-                    // Диффузное отражение
-                    if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                        intensity += light.intensity * n_dot_l / (length_n * MyMath.Length(vec_l));
-
-                    // Зеркальное отражение
-                    if (myObject.specular != -1)
-                    {
-                        var vec_r = ReflectRay(vec_l, normal);
-                        var r_dot_v = MyMath.DotProduct(vec_r, view);
-
-                        if (r_dot_v > 0)
-                        {
-                            intensity += light.intensity * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
                         }
                     }
+                    else
+                    {
+                        ComputeColor(objects, light, point, normal, view, myObject, 
+                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v);
+                    }
+
                 }
             }
             return intensity;
         }
 
+        public static void ComputeColor(List<Object> objects, Light light, double[] point, double[] normal,
+                                             double[] view, Object myObject, double[] prevPoint, int flag, double[] vec_l, double t_max,
+                                              ref double intensity, double length_n, double length_v)
+        {
+            double n_dot_l = MyMath.DotProduct(normal, vec_l);
+
+            // Проверка тени
+            double tClosest = Double.PositiveInfinity;
+            Object closestObject = null;
+
+            ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001,
+                                t_max, flag); // fix eps
+
+            // у прозрачных объектов нет тени (должна быть, зависит от прозрачности!)
+            if (closestObject != null)
+            {
+                /*if (closestObject.transparent > 0)
+                {
+                    if (intensity != 0)
+                    {
+                        intensity *= 1.1 + (closestObject.transparent - 1);
+                    }
+
+                    if (intensity == 0)
+                    {
+
+                    }
+
+                }*/
+                return;
+            }
+            // Диффузное отражение
+            if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
+                intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+
+            // Зеркальное отражение
+            if (myObject.specular != 0)
+            {
+                var vec_r = ReflectRay(vec_l, normal);
+                var r_dot_v = MyMath.DotProduct(vec_r, view);
+
+                if (r_dot_v > 0)
+                {
+                    intensity += light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                }
+            }
+        }
+
+        public static List<Ray> generateTriangleRaySet(double[] origin, double[][] points)
+        {
+            double[] firstRay = MyMath.Subtract(points[0], origin);
+
+            double[] secondRay = MyMath.Subtract(points[1], origin);
+
+            double[] thirdRay = MyMath.Subtract(points[2], origin);
+
+            List<Ray> result = new List<Ray>();
+
+            result.Add(new Ray(origin, firstRay));
+            result.Add(new Ray(origin, secondRay));
+            result.Add(new Ray(origin, thirdRay));          
+
+            return result;
+        }
+
+        public static List<Ray> generateSphereRaySet(double[] origin, LightSphere sphere)
+        {
+            int segmentationLevel = 5;
+            int perSegment = 2;
+
+            // Центральный вектор направленный в сторону сферы
+            double[] toSphereCenter = MyMath.Subtract(sphere.position, origin);
+
+            // Нормализованный центральный вектор
+            double[] central = MyMath.Multiply(1.0 / MyMath.Length(toSphereCenter), toSphereCenter);
+
+            // Расстрояние до цента источника от начала
+            double distance = MyMath.Length(toSphereCenter);
+
+            // Результат
+            List<Ray> result = new List<Ray>();
+            result.Add(new Ray(origin, central));
+
+            // Получаем первые 4 основные вектора ортогональных основному вектору (направленному к центру сферы)
+            double[] deviantion = { 1e-3, 1e-3, 1e-3 };
+            double[] buf = MyMath.Add(central, deviantion);
+
+            buf = MyMath.Cross(central, buf);
+            double[] v1 = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
+
+            buf = MyMath.Cross(central, v1);
+            double[] v2 = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
+
+            double[] v3 = MyMath.Multiply(-1, v1);
+            double[] v4 = MyMath.Multiply(-1, v2);
+
+            List<double[]> vectors = new List<double[]>();
+
+            // Добавляем вектора в связанный список
+            vectors.Add(v1);
+            vectors.Add(v2);
+            vectors.Add(v3);
+            vectors.Add(v4);
+
+            int countRays = 4;
+            // Если нужно сегментировать (получить вектора находящиеся между)
+            if (segmentationLevel > 0)
+            {
+                // Каждая итерация удваивает кол-во векторов, таким образом окружность сегменитируется
+                // и появляется возможность для большей точности
+                for (int l = 0; l < segmentationLevel; l++)
+                {
+                    double[] newVector;
+                    int j;
+                    for (j = 0; j < vectors.Count - 1; j++)
+                    {
+                        newVector = MyMath.Add(vectors[j], vectors[j + 1]);
+                        vectors.Insert(j + 1, MyMath.Multiply(1.0 / MyMath.Length(newVector), newVector));
+                        j++;
+                        countRays++;
+                    }
+                    newVector = MyMath.Add(vectors[j], vectors[0]);
+                    vectors.Insert(0, MyMath.Multiply(1.0 / MyMath.Length(newVector), newVector));
+
+                }
+            }
+
+            // Коэффициент пропорциональности, отношение радиуса диска сферы и длинны до центра
+            // Он дает понять какое нужно отклонение (какой должна быть длина перпедикулярного вектора) добавить к
+            // базовому чтобы новый вектор указывал в сторону границ диска сферы
+
+            double fullBias = (sphere.radius - 0.01f) / distance;
+
+            // Создаем лучи
+            
+            foreach (double[] segmentVector in vectors)
+            {
+                for (int i = 0; i < perSegment; i++)
+                {
+                    double cof = (i + 1) / perSegment * fullBias;
+                    double[] newBuf = MyMath.Multiply(cof, segmentVector);
+                    newBuf = MyMath.Add(newBuf, central);
+
+                    result.Add(new Ray(origin, newBuf));
+                    //countRays++;
+                }
+            }
+            sphere.SetCountPoints(countRays);
+
+            return result;
+        }
+        
         public static double[] CanvasToViewport(int width, int height, int[] p2d)
         {
             double viewportSize = 1;
