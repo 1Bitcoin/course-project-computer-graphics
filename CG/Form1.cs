@@ -22,15 +22,12 @@ namespace CG
         int flag = 0;
         int workFlag = 1;
 
+        long totalTime = 0;
+
         public Form1()
         {
-            InitializeComponent();
-
-            result = new Bitmap(canvas.Width, canvas.Height);
-
-            progressBar1.Maximum = result.Width * result.Height;
-            progressBar1.Value = 0;
-            
+            InitializeComponent();       
+            progressBar1.Value = 0;          
 
         }
 
@@ -41,8 +38,53 @@ namespace CG
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (!backgroundWorker1.IsBusy)
+            {
+                progressBar1.Value = 0;
+                result = new Bitmap(canvas.Width, canvas.Height);
+
+                progressBar1.Maximum = result.Width - 1;
+                backgroundWorker1.RunWorkerAsync();
+            }     
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            if (backgroundWorker1.IsBusy)
+            {
+                backgroundWorker1.CancelAsync();
+            }
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            progressBar1.Value += e.ProgressPercentage;
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Cancelled)
+            {
+                workFlag = 0;
+                canvas.Image = result;
+                canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
+                canvas.Refresh();
+                label2.Text = "Work time(milliseconds): " + totalTime;
+
+            }
+
+            else
+            {
+                canvas.Image = result;
+                canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
+                canvas.Refresh();
+                label2.Text = "Work time(milliseconds): " + totalTime;
+            }
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
             workFlag = 1;
-            progressBar1.Value = 0;
 
             Bitmap texture = Image.FromFile(@"d:\earth.png") as Bitmap;
             Bitmap texture1 = Image.FromFile(@"d:\1.bmp") as Bitmap;
@@ -154,16 +196,16 @@ namespace CG
             //LoaderFile.Load();
             //LoaderFile.InitializingTriangles(objects);
 
-            Light[] lights = { new AmbientLight(0.1), new LightDisk(test1, 0.3, 0.4) //new PointLight(test1, 0.3)
+            Light[] lights = { new AmbientLight(0.1), new LightDisk(test1, 0.9, 0.4) //new PointLight(test1, 0.3)
                 };
 
             int angleY = Int32.Parse(textBox1.Text);
             int angleX = Int32.Parse(textBox5.Text);
 
-            
 
-            double[,] cameraRotationOY = { 
-                                        { Math.Cos(Math.PI * angleY / 180.0), 0, Math.Sin(Math.PI * angleY / 180.0) }, 
+
+            double[,] cameraRotationOY = {
+                                        { Math.Cos(Math.PI * angleY / 180.0), 0, Math.Sin(Math.PI * angleY / 180.0) },
                                         { 0, 1, 0 },
                                         { -Math.Sin(Math.PI * angleY / 180.0), 0, Math.Cos(Math.PI * angleY / 180.0)}
                                         }; //dell
@@ -193,13 +235,13 @@ namespace CG
             int step = data.Width / n;
 
             Thread[] t = new Thread[n];
-       
+
             int x1 = 0;
             int x2 = step;
 
             int y1 = 0;
             int y2 = data.Height;
-         
+
             for (int i = 0; i < n; i++)
             {
                 AllParameters p = new AllParameters(x1, y1, x2, y2, ref workFlag);
@@ -208,7 +250,7 @@ namespace CG
                 t[i].Start(p);
 
                 x1 = x2;
-                x2 += step; 
+                x2 += step;
             }
 
             foreach (Thread thread in t)
@@ -244,6 +286,15 @@ namespace CG
                         buffer[offset + 1] = (byte)color[1];
                         buffer[offset + 2] = (byte)color[0];
                     }
+
+                    backgroundWorker1.ReportProgress(1);
+
+                    if (backgroundWorker1.CancellationPending)
+                    {
+                        e.Cancel = true;
+                        backgroundWorker1.ReportProgress(0);
+                        return;
+                    }
                 }
 
             }
@@ -268,17 +319,10 @@ namespace CG
                 flag = 0;
             }
 
-            canvas.Image = result;
-            canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
-            canvas.Refresh();
-
             time.Stop(); // останавливаем работу таймера
-            label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время         
-        }
 
-        private void button2_Click_1(object sender, EventArgs e)
-        {
-            workFlag = 0;
+            totalTime = time.ElapsedMilliseconds;
+
         }
 
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
@@ -350,5 +394,6 @@ namespace CG
         {
 
         }
+
     }
 }
