@@ -20,6 +20,7 @@ namespace CG
     {
         Bitmap result;
         int flag = 0;
+        int workFlag = 1;
 
         public Form1()
         {
@@ -40,6 +41,7 @@ namespace CG
 
         private void button1_Click(object sender, EventArgs e)
         {
+            workFlag = 1;
             progressBar1.Value = 0;
 
             Bitmap texture = Image.FromFile(@"d:\earth.png") as Bitmap;
@@ -62,7 +64,7 @@ namespace CG
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
             double[] test = { 0, 0.5, 6 };
-            double[] test1 = { 0, 8, 6 };
+            double[] test1 = { 0, 3, 6 };
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
@@ -152,11 +154,13 @@ namespace CG
             //LoaderFile.Load();
             //LoaderFile.InitializingTriangles(objects);
 
-            Light[] lights = { new AmbientLight(0.1), new LightSphere(test1, 6, 0.7) //new PointLight(test1, 0.3)
+            Light[] lights = { new AmbientLight(0.1), new LightDisk(test1, 0.3, 0.4) //new PointLight(test1, 0.3)
                 };
 
             int angleY = Int32.Parse(textBox1.Text);
             int angleX = Int32.Parse(textBox5.Text);
+
+            
 
             double[,] cameraRotationOY = { 
                                         { Math.Cos(Math.PI * angleY / 180.0), 0, Math.Sin(Math.PI * angleY / 180.0) }, 
@@ -198,7 +202,7 @@ namespace CG
          
             for (int i = 0; i < n; i++)
             {
-                AllParameters p = new AllParameters(x1, y1, x2, y2);
+                AllParameters p = new AllParameters(x1, y1, x2, y2, ref workFlag);
 
                 t[i] = new Thread(Process);
                 t[i].Start(p);
@@ -222,9 +226,9 @@ namespace CG
                 int endx = p.endx;
                 int endy = p.endy;
 
-                for (int i = x; i < endx; i++)
+                for (int i = x; i < endx & workFlag == 1; i++)
                 {
-                    for (int j = y; j < endy; j++)
+                    for (int j = y; j < endy & workFlag == 1; j++)
                     {
                         int[] work = { i - data.Height / 2, j - data.Width / 2 };
 
@@ -270,6 +274,16 @@ namespace CG
 
             time.Stop(); // останавливаем работу таймера
             label2.Text = "Work time(milliseconds): " + time.ElapsedMilliseconds; // выводим затраченное время         
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            workFlag = 0;
+        }
+
+        private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
+        {
+
         }
 
         private void canvas_Click(object sender, EventArgs e)

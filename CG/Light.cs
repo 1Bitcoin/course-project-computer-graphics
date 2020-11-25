@@ -101,4 +101,30 @@ namespace CG
             return answer;
         }
     }
+
+    class LightDisk : Light
+    {
+        public double[] position;
+        public int countLightpoints = 0;
+        public double radius;
+
+        public LightDisk(double[] position, double radius, double intensity)
+        {
+            this.radius = radius;
+            this.position = position;
+            this.intensity = intensity;
+        }
+
+        public override double GetIntensityOnePoint()
+        {
+            double answer = intensity / countLightpoints;
+
+            return answer;
+        }
+
+        public void SetCountPoints(int count)
+        {
+            this.countLightpoints = count;
+        }
+    }
 }

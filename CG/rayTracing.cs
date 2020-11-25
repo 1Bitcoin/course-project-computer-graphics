@@ -77,9 +77,9 @@ namespace CG
                         t_max = Double.PositiveInfinity;
                     }
 
-                    if (light is LightSphere lightsphere)
+                    if (light is LightDisk lightdisk)
                     {
-                        List<Ray> result = generateSphereRaySet(point, lightsphere);
+                        List<Ray> result = generateDiskRaySet(point, lightdisk);
 
                         for (int j = 0; j < result.Count; j++)
                         {
@@ -149,6 +149,44 @@ namespace CG
             }
         }
 
+        public static double GetRandomNumber(double minimum, double maximum)
+        {
+            Random random = new Random();
+            return random.NextDouble() * (maximum - minimum) + minimum;
+        }
+
+        public static List<Ray> generateDiskRaySet(double[] origin, LightDisk disk)
+        {
+            // Результат
+            List<Ray> result = new List<Ray>();
+            Random random = new Random();
+
+            int segmentationLevel = (int) (disk.radius * 500);
+            int countRays = 0;
+
+            for (int i = 0; i < segmentationLevel; i++)
+            {
+                //Получить случайное число (в диапазоне от 0 до 2pi)
+                double angle = random.NextDouble() * 2 * Math.PI;
+
+                //Получить случайное число (в диапазоне от 0 до r)
+                double r = disk.radius * Math.Sqrt(random.NextDouble());
+
+                double[] randomPointOnDisk = { disk.position[0] + r * Math.Cos(angle), disk.position[1], disk.position[2] + r * Math.Sin(angle) };
+
+                // Формируем вектор
+                double[] vector = MyMath.Subtract(randomPointOnDisk, origin);
+
+                result.Add(new Ray(origin, vector));
+                countRays++;
+            }
+
+
+            disk.SetCountPoints(countRays); 
+
+            return result;
+        }
+
         public static List<Ray> generateTriangleRaySet(double[] origin, double[][] points)
         {
             double[] firstRay = MyMath.Subtract(points[0], origin);
@@ -168,8 +206,8 @@ namespace CG
 
         public static List<Ray> generateSphereRaySet(double[] origin, LightSphere sphere)
         {
-            int segmentationLevel = 5;
-            int perSegment = 2;
+            int segmentationLevel = 6;
+            int perSegment = 1;
 
             // Центральный вектор направленный в сторону сферы
             double[] toSphereCenter = MyMath.Subtract(sphere.position, origin);
@@ -182,7 +220,7 @@ namespace CG
 
             // Результат
             List<Ray> result = new List<Ray>();
-            result.Add(new Ray(origin, central));
+            result.Add(new Ray(origin, toSphereCenter));
 
             // Получаем первые 4 основные вектора ортогональных основному вектору (направленному к центру сферы)
             double[] deviantion = { 1e-3, 1e-3, 1e-3 };
@@ -205,7 +243,7 @@ namespace CG
             vectors.Add(v3);
             vectors.Add(v4);
 
-            int countRays = 4;
+
             // Если нужно сегментировать (получить вектора находящиеся между)
             if (segmentationLevel > 0)
             {
@@ -218,12 +256,11 @@ namespace CG
                     for (j = 0; j < vectors.Count - 1; j++)
                     {
                         newVector = MyMath.Add(vectors[j], vectors[j + 1]);
-                        vectors.Insert(j + 1, MyMath.Multiply(1.0 / MyMath.Length(newVector), newVector));
+                        vectors.Insert(j + 1, newVector);
                         j++;
-                        countRays++;
                     }
                     newVector = MyMath.Add(vectors[j], vectors[0]);
-                    vectors.Insert(0, MyMath.Multiply(1.0 / MyMath.Length(newVector), newVector));
+                    vectors.Insert(0, newVector);
 
                 }
             }
@@ -235,7 +272,8 @@ namespace CG
             double fullBias = (sphere.radius - 0.01f) / distance;
 
             // Создаем лучи
-            
+            int countRays = 0;
+
             foreach (double[] segmentVector in vectors)
             {
                 for (int i = 0; i < perSegment; i++)
@@ -245,7 +283,7 @@ namespace CG
                     newBuf = MyMath.Add(newBuf, central);
 
                     result.Add(new Ray(origin, newBuf));
-                    //countRays++;
+                    countRays++;
                 }
             }
             sphere.SetCountPoints(countRays);
