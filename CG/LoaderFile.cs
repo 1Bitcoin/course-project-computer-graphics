@@ -30,9 +30,9 @@ namespace CG
         static List<Vertex> vertices = new List<Vertex>();  // список вершин
         public static List<Tuple<int, int, int>> polygons = new List<Tuple<int, int, int>>();  // список номеров полигонов
 
-        public static void Load()
+        public static void Load(string filename)
         {
-            string[] lines = File.ReadAllLines(@"D:\16.obj");
+            string[] lines = File.ReadAllLines(filename);
             foreach (string line in lines)
             {
                 // строки с вершинами
@@ -112,8 +112,7 @@ namespace CG
             s = s.Substring(i);
 
             var splitedString = s.Split(' ');
-            
-         
+                 
 
             double[] answer = { ConvertToDouble(splitedString[0]), ConvertToDouble(splitedString[1]), ConvertToDouble(splitedString[2]) };
 

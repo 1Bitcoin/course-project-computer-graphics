@@ -8,6 +8,37 @@ namespace CG
 {
     class MyMath
     {
+        public static double[,] getMatrixOx(double angleX)
+        {
+            double[,] cameraRotationOX = {
+                                        { 1, 0, 0 },
+                                        { 0, Math.Cos(Math.PI * angleX / 180.0), -Math.Sin(Math.PI * angleX / 180.0) },
+                                        { 0, Math.Sin(Math.PI * angleX / 180.0), Math.Cos(Math.PI * angleX / 180.0)}
+                                        };
+            return cameraRotationOX;
+        }
+
+        public static double[,] getMatrixOy(double angleY)
+        {
+            double[,] cameraRotationOY = {
+                                        { Math.Cos(Math.PI * angleY / 180.0), 0, Math.Sin(Math.PI * angleY / 180.0) },
+                                        { 0, 1, 0 },
+                                        { -Math.Sin(Math.PI * angleY / 180.0), 0, Math.Cos(Math.PI * angleY / 180.0)}
+                                        };
+            return cameraRotationOY;
+        }
+
+
+        public static double[,] getMatrixOz(double angleZ)
+        {
+            double[,] cameraRotationOZ = {
+                                        { Math.Cos(Math.PI * angleZ / 180.0), -Math.Sin(Math.PI * angleZ / 180.0), 0 },
+                                        { Math.Sin(Math.PI * angleZ / 180.0), Math.Cos(Math.PI * angleZ / 180.0), 0 },
+                                        { 0, 0, 1}
+                                        };
+            return cameraRotationOZ;
+        }
+
         public static double angleVectors(double[] v1, double[] v2)
         {
             double numerator = v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
@@ -30,7 +61,7 @@ namespace CG
             else
             {
                 Swap(ref etai, ref etat);
-                ChangeZnak(ref n);
+                ChangeSign(ref n);
             }
             double eta = etai / etat;
             double k = 1 - eta * eta * (1 - cosi * cosi);
@@ -49,7 +80,7 @@ namespace CG
             second = buf;
         }
 
-        public static void ChangeZnak(ref double[] mass) // fixname
+        public static void ChangeSign(ref double[] mass) 
         {
             for (int i = 0; i < mass.Length; i++)
             {

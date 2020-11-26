@@ -23,12 +23,14 @@ namespace CG
         int workFlag = 1;
 
         long totalTime = 0;
+        Scene scene = new Scene();
 
         public Form1()
         {
             InitializeComponent();       
-            progressBar1.Value = 0;          
-
+            progressBar1.Value = 0;
+            result = new Bitmap(canvas.Width, canvas.Height);
+            progressBar1.Maximum = result.Width * result.Height;           
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -40,10 +42,7 @@ namespace CG
         {
             if (!backgroundWorker1.IsBusy)
             {
-                progressBar1.Value = 0;
-                result = new Bitmap(canvas.Width, canvas.Height);
-
-                progressBar1.Maximum = result.Width - 1;
+                progressBar1.Value = 0;               
                 backgroundWorker1.RunWorkerAsync();
             }     
         }
@@ -66,163 +65,44 @@ namespace CG
             if (e.Cancelled)
             {
                 workFlag = 0;
-                canvas.Image = result;
-                canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
-                canvas.Refresh();
-                label2.Text = "Work time(milliseconds): " + totalTime;
-
             }
 
-            else
-            {
-                canvas.Image = result;
-                canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
-                canvas.Refresh();
-                label2.Text = "Work time(milliseconds): " + totalTime;
-            }
+            canvas.Image = result;
+            canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
+            canvas.Refresh();
+            label2.Text = "Work time(milliseconds): " + totalTime;
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            progressBar1.Value = 0;
+
             workFlag = 1;
 
-            Bitmap texture = Image.FromFile(@"d:\earth.png") as Bitmap;
+            result = new Bitmap(canvas.Width, canvas.Height);
+
+
             Bitmap texture1 = Image.FromFile(@"d:\1.bmp") as Bitmap;
-
-            double[] cameraPosition = { Int32.Parse(textBox2.Text), Int32.Parse(textBox3.Text), Int32.Parse(textBox4.Text) };
-
-            double[] eye1 = { 0.05, 0.17, 2.92 };
-            double[] eye2 = { -0.05, 0.17, 2.92 };
-
-            double[] nose = { 0, 0.13, 2.92 };
-
-            double[] baseSphere = { 0, -0.5, 3 };
-            double[] middleSphere = { 0, -0.1, 3 };
-            double[] highSphere = { 0, 0.17, 3 };
-
-            double[] majorSphere = { 0, -0.4, 3 };
-            double[] underMajorsphere = { 0, -1.6, 3 };
-            double[] plane = { 0, -5001, 0 };
-            double[] behindMajorsphere = { 0, 0.2, 5 };
-
-            double[] test = { 0, 0.5, 6 };
-            double[] test1 = { 0, 3, 6 };
-
-            double[] black = { 0, 0, 0 };
-            double[] orange = { 255, 128, 0 };
-            double[] snow = { 255, 255, 255 };
-            double[] red = { 255, 0, 0 };
-
-            double[] color1 = { 254, 239, 210 };
-            double[] color2 = { 240, 240, 240 };
-            double[] color3 = { 0, 255, 0 };
-            double[] color4 = { 255, 255, 0 };
-
-            double[] poslight = { 2, 2, 0 };
-
-            double[] poslight5 = { 2, 2.2, -1 };
-            double[] poslight6 = { 2, 2.5, -1 };
-            double[] poslight7 = { 2, 2.3, -1 };
-
-
-            double[] poslight1 = { -1, 1, 3 };
-
-            double[] directionlight = { 0, 0, -2 };
-
-            int recursionDepth = 5;
-
-            /*double[][] myTriangle =
-            {
-                new double[] { -100, 0, -100 },
-                new double[] { -100, 0, 100 },
-                new double[] { 100 , 0, -100}
-            };*/
-
-            double[][] myTriangle =
-            {
-                new double[] { -1000, -1, -1000 },
-                new double[] { -1000, -1, 1000 },
-                new double[] { 1000, -1, 0}
-            };
-
-
-            double[][] myTriangle1 =
-            {
-                new double[] { 0.91653049, 2.983851, -1.7062331 },
-                new double[] { -3.198668, -0.82877064, -1.7062331 },
-                new double[] { -3.198668, 2.983851, -1.7062331 }
-            };
-
-            double[][] myTriangle2 =
-            {
-                new double[] { 0.91653049, 2.983851, -1.7062331 },
-                new double[] { -3.198668, -0.82877064, -1.7062331 },
-                new double[] { 0.91653049, -0.82877064, -1.7062331 }
-            };
-
-            double[][] postriangle =
-            {
-                new double[] { 3, 4, 6 },
-                new double[] { -2, 4, 2 },
-                new double[] { 0, 4, 0 }
-            };
-
-            //consoDouble.TryParse("1.1")
-
-
-            //new Sphere(center2, 1, color1, 50, 0.2)
-            //new Sphere(center3, 1, color3, 10, 0.4)
-            //{ new Sphere(majorSphere, 1, color2, 1000, 0, 1),
-
-            //var objects = new List<Object>() { };
-
-            var objects = new List<Object>() { new Sphere(test, 1, red, 0, 0, 0, 0, null),
-                                               new Triangle(myTriangle, orange, 0, 0, 0, 0, null),
-                                               /*new Sphere(test1, 2, snow, 0, 0, 0, 0, null),
-                                               
-                                               new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1, null),
-                                               new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
-                                               new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
-                                               new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
-                                               new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1, null),
-                                               new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),
-                                               */
-
-
-            };
-
-            //LoaderFile.Load();
-            //LoaderFile.InitializingTriangles(objects);
-
-            Light[] lights = { new AmbientLight(0.1), new LightDisk(test1, 0.9, 0.4) //new PointLight(test1, 0.3)
-                };
 
             int angleY = Int32.Parse(textBox1.Text);
             int angleX = Int32.Parse(textBox5.Text);
+            int angleZ = Int32.Parse(textBox6.Text);
 
+            double[] cameraPosition = { Int32.Parse(textBox2.Text), Int32.Parse(textBox3.Text), Int32.Parse(textBox4.Text) };
 
-
-            double[,] cameraRotationOY = {
-                                        { Math.Cos(Math.PI * angleY / 180.0), 0, Math.Sin(Math.PI * angleY / 180.0) },
-                                        { 0, 1, 0 },
-                                        { -Math.Sin(Math.PI * angleY / 180.0), 0, Math.Cos(Math.PI * angleY / 180.0)}
-                                        }; //dell
-
-            double[,] cameraRotationOX = {
-                                        { 1, 0, 0 },
-                                        { 0, Math.Cos(Math.PI * angleX / 180.0), -Math.Sin(Math.PI * angleX / 180.0) },
-                                        { 0, Math.Sin(Math.PI * angleX / 180.0), Math.Cos(Math.PI * angleX / 180.0)}
-                                        }; //dell
-
-            //c = Color.FromArgb(80, 20, 86, 20);
+            int recursionDepth = Int32.Parse(textBox7.Text);
+            int countThread = Int32.Parse(textBox8.Text);
+            
+            scene.SetMajorScene();
 
             var rect = new Rectangle(0, 0, result.Width, result.Height);
             var data = result.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, result.PixelFormat);
             var depth = Bitmap.GetPixelFormatSize(data.PixelFormat) / 8; //bytes per pixel
 
-            var buffer = new byte[data.Width * data.Height * depth];
+            int width = data.Width;
+            int height = data.Height;
+
+            var buffer = new byte[width * height * depth];
 
             Stopwatch time = new Stopwatch(); // создаём объект Stopwatch
             time.Start(); // запускаем отсчёт времени
@@ -230,11 +110,9 @@ namespace CG
             //copy pixels to buffer
             Marshal.Copy(data.Scan0, buffer, 0, buffer.Length);
 
-            int n = 4;
+            int step = data.Width / countThread;
 
-            int step = data.Width / n;
-
-            Thread[] t = new Thread[n];
+            Thread[] t = new Thread[countThread];
 
             int x1 = 0;
             int x2 = step;
@@ -242,7 +120,7 @@ namespace CG
             int y1 = 0;
             int y2 = data.Height;
 
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < countThread; i++)
             {
                 AllParameters p = new AllParameters(x1, y1, x2, y2, ref workFlag);
 
@@ -258,6 +136,8 @@ namespace CG
                 thread.Join();
             }
 
+            result.UnlockBits(data);
+
             void Process(object obj)
             {
                 AllParameters p = (AllParameters)obj;
@@ -272,23 +152,25 @@ namespace CG
                 {
                     for (int j = y; j < endy & workFlag == 1; j++)
                     {
-                        int[] work = { i - data.Height / 2, j - data.Width / 2 };
+                        int[] work = { i - height / 2, j - width / 2 };
 
-                        double[] direction = RayTracing.CanvasToViewport(data.Width, data.Height, work);
-                        direction = MyMath.MultiplyMV(cameraRotationOY, direction);
-                        direction = MyMath.MultiplyMV(cameraRotationOX, direction);
+                        double[] direction = RayTracing.CanvasToViewport(width, height, work);
+                        direction = MyMath.MultiplyMV(MyMath.getMatrixOx(angleX), direction);
+                        direction = MyMath.MultiplyMV(MyMath.getMatrixOy(angleY), direction);
+                        direction = MyMath.MultiplyMV(MyMath.getMatrixOz(angleZ), direction);
 
-                        double[] color = RayTracing.TraceRay(recursionDepth, lights, objects, cameraPosition, direction, 1, Double.PositiveInfinity, 0);
+                        double[] color = RayTracing.TraceRay(recursionDepth, scene.lights, scene.objects, 
+                            cameraPosition, direction, 1, Double.PositiveInfinity, 0);
 
-                        var offset = ((j * data.Width) + i) * depth;
+                        var offset = ((j * width) + i) * depth;
 
                         buffer[offset + 0] = (byte)color[2];
                         buffer[offset + 1] = (byte)color[1];
                         buffer[offset + 2] = (byte)color[0];
+
+                        //backgroundWorker1.ReportProgress(1);
                     }
-
-                    backgroundWorker1.ReportProgress(1);
-
+                  
                     if (backgroundWorker1.CancellationPending)
                     {
                         e.Cancel = true;
@@ -298,11 +180,9 @@ namespace CG
                 }
 
             }
-
-            result.UnlockBits(data);
-
-            string outputFile1 = @"d:\GO1.bmp";
-            string outputFile2 = @"d:\GO2.bmp";
+          
+            string outputFile1 = @"d:\temp1.bmp";
+            string outputFile2 = @"d:\temp2.bmp";
 
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
 
@@ -322,6 +202,21 @@ namespace CG
             time.Stop(); // останавливаем работу таймера
 
             totalTime = time.ElapsedMilliseconds;
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.Cancel)
+                return;
+            // получаем выбранный файл
+            string filename = openFileDialog1.FileName;
+            // читаем файл в строку
+
+            LoaderFile.Load(filename);
+            LoaderFile.InitializingTriangles(scene.objects);
+
+            MessageBox.Show("Файл открыт");
 
         }
 
@@ -391,6 +286,11 @@ namespace CG
         }
 
         private void label11_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
 
         }

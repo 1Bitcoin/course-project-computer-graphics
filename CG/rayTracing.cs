@@ -43,7 +43,7 @@ namespace CG
             return MyMath.Subtract(MyMath.Multiply(2 * MyMath.DotProduct(vector, normal), normal), vector);
         }
 
-        public static double ComputeLighting(List<Object> objects, Light[] lights, double[] point, double[] normal, 
+        public static double ComputeLighting(List<Object> objects, List<Light> lights, double[] point, double[] normal, 
                                              double[] view, Object myObject, double[] prevPoint, int flag)
         {
             double intensity = 0;
@@ -52,7 +52,7 @@ namespace CG
 
             double t_max = 1;
 
-            for (int i = 0; i < lights.Length; i++)
+            for (int i = 0; i < lights.Count; i++)
             {
                 Light light = lights[i];
 
@@ -398,7 +398,7 @@ namespace CG
             return normal;
         }
 
-        public static double[] TraceRay(int recursionDepth, Light[] lights, List<Object> objects, double[] origin, 
+        public static double[] TraceRay(int recursionDepth, List<Light> lights, List<Object> objects, double[] origin, 
                                     double[] direction, double min_t, double max_t, int flag)
         {
             //int[] flags = new int[recursionDepth];
@@ -419,6 +419,8 @@ namespace CG
             double[] pointEps = MyMath.Add(origin, MyMath.Multiply(tClosest + 0.001, direction));
 
             double[] normal = { 0, 0, 0 };
+            double[] res_color = { 0, 0, 0 };
+
             // тут считается нормаль ONLY для сферы в точке point(см.выше)
             if (closestObject is Sphere sphere)
             {
@@ -436,13 +438,9 @@ namespace CG
 
                     Color textureColor = closestObject.texture.GetPixel((int)width, (int)height);
 
-                    byte r = textureColor.R;
-                    byte g = textureColor.G;
-                    byte b = textureColor.B;
-
-                    double[] res_color = { r, g, b };
-
-                    return res_color;
+                    res_color[0] = textureColor.R;
+                    res_color[1] = textureColor.G;
+                    res_color[2] = textureColor.B;
                 }
             }
 
@@ -457,13 +455,9 @@ namespace CG
 
                     Color textureColor = triangle.texture.GetPixel((int)width, (int)height);
 
-                    byte r = textureColor.R;
-                    byte g = textureColor.G;
-                    byte b = textureColor.B;
-
-                    double[] res_color = { r, g, b };
-
-                    return res_color;
+                    res_color[0] = textureColor.R;
+                    res_color[1] = textureColor.G;
+                    res_color[2] = textureColor.B;
                 }
             }          
 
@@ -482,11 +476,15 @@ namespace CG
                 newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, direction, 0.001, Double.PositiveInfinity, 1);
                 newFlag = 1;
             }
-            
-            
-            // Локальный цвет
-            temp = MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
-                                closestObject.color);
+
+
+            // Локальный цвет(вычисляется либо по цвету объекты, либо по его текстуре, если она есть)
+            if (closestObject.texture != null)
+                temp = MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
+                                res_color);
+            else
+                temp = MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
+                    closestObject.color);
             // вычисляем интенсивность в точке
             // и умножаем ее на RGB массив 
 
