@@ -108,11 +108,27 @@ namespace CG
         public int countLightpoints = 0;
         public double radius;
 
+        public Triangle triangle;
+
         public LightDisk(double[] position, double radius, double intensity)
         {
             this.radius = radius;
             this.position = position;
-            this.intensity = intensity;
+            this.intensity = intensity;          
+
+            double lengthSide = 6 * radius / Math.Sqrt(3);
+
+            double[][] positionTriangle =
+            {
+                new double[] { position[0] - lengthSide / 2, position[1], position[2] - radius },
+                new double[] { position[0] + lengthSide / 2, position[1], position[2] - radius },
+                new double[] { position[0], position[1], position[2] + Math.Sqrt(Math.Pow(lengthSide / 2, 2) + Math.Pow(radius, 2)) }
+            };
+
+            double[] snow = { 255, 255, 255 };
+
+            this.triangle = new Triangle(positionTriangle, snow, 0, 0, 0, 0, null, 1);
+
         }
 
         public override double GetIntensityOnePoint()

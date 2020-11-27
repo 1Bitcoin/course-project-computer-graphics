@@ -69,7 +69,7 @@ namespace CG
                                             new double[] { vertices[index2].X, vertices[index2].Y, vertices[index2].Z },
                                             new double[] { vertices[index3].X, vertices[index3].Y, vertices[index3].Z }
                 };
-                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 0, 0, null));
+                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 0, 0, null, 0));
             }
             
             numbersPolygons = 0;

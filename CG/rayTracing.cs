@@ -111,7 +111,7 @@ namespace CG
             double tClosest = Double.PositiveInfinity;
             Object closestObject = null;
 
-            ClosestIntersection(objects, ref tClosest, ref closestObject, point, vec_l, 0.001,
+            ClosestIntersectionLight(objects, light, ref tClosest, ref closestObject, point, vec_l, 0.001,
                                 t_max, flag); // fix eps
 
             // у прозрачных объектов нет тени (должна быть, зависит от прозрачности!)
@@ -203,93 +203,6 @@ namespace CG
 
             return result;
         }
-
-        public static List<Ray> generateSphereRaySet(double[] origin, LightSphere sphere)
-        {
-            int segmentationLevel = 6;
-            int perSegment = 1;
-
-            // Центральный вектор направленный в сторону сферы
-            double[] toSphereCenter = MyMath.Subtract(sphere.position, origin);
-
-            // Нормализованный центральный вектор
-            double[] central = MyMath.Multiply(1.0 / MyMath.Length(toSphereCenter), toSphereCenter);
-
-            // Расстрояние до цента источника от начала
-            double distance = MyMath.Length(toSphereCenter);
-
-            // Результат
-            List<Ray> result = new List<Ray>();
-            result.Add(new Ray(origin, toSphereCenter));
-
-            // Получаем первые 4 основные вектора ортогональных основному вектору (направленному к центру сферы)
-            double[] deviantion = { 1e-3, 1e-3, 1e-3 };
-            double[] buf = MyMath.Add(central, deviantion);
-
-            buf = MyMath.Cross(central, buf);
-            double[] v1 = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
-
-            buf = MyMath.Cross(central, v1);
-            double[] v2 = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
-
-            double[] v3 = MyMath.Multiply(-1, v1);
-            double[] v4 = MyMath.Multiply(-1, v2);
-
-            List<double[]> vectors = new List<double[]>();
-
-            // Добавляем вектора в связанный список
-            vectors.Add(v1);
-            vectors.Add(v2);
-            vectors.Add(v3);
-            vectors.Add(v4);
-
-
-            // Если нужно сегментировать (получить вектора находящиеся между)
-            if (segmentationLevel > 0)
-            {
-                // Каждая итерация удваивает кол-во векторов, таким образом окружность сегменитируется
-                // и появляется возможность для большей точности
-                for (int l = 0; l < segmentationLevel; l++)
-                {
-                    double[] newVector;
-                    int j;
-                    for (j = 0; j < vectors.Count - 1; j++)
-                    {
-                        newVector = MyMath.Add(vectors[j], vectors[j + 1]);
-                        vectors.Insert(j + 1, newVector);
-                        j++;
-                    }
-                    newVector = MyMath.Add(vectors[j], vectors[0]);
-                    vectors.Insert(0, newVector);
-
-                }
-            }
-
-            // Коэффициент пропорциональности, отношение радиуса диска сферы и длинны до центра
-            // Он дает понять какое нужно отклонение (какой должна быть длина перпедикулярного вектора) добавить к
-            // базовому чтобы новый вектор указывал в сторону границ диска сферы
-
-            double fullBias = (sphere.radius - 0.01f) / distance;
-
-            // Создаем лучи
-            int countRays = 0;
-
-            foreach (double[] segmentVector in vectors)
-            {
-                for (int i = 0; i < perSegment; i++)
-                {
-                    double cof = (i + 1) / perSegment * fullBias;
-                    double[] newBuf = MyMath.Multiply(cof, segmentVector);
-                    newBuf = MyMath.Add(newBuf, central);
-
-                    result.Add(new Ray(origin, newBuf));
-                    countRays++;
-                }
-            }
-            sphere.SetCountPoints(countRays);
-
-            return result;
-        }
         
         public static double[] CanvasToViewport(int width, int height, int[] p2d)
         {
@@ -301,9 +214,8 @@ namespace CG
             return ans;
         }
 
-        // Поиск ближайшего пересечения между объектом и лучом.
-        public static void ClosestIntersection(List<Object> objects, ref double tClosest, ref Object closestObject, 
-                                          double[] origin, double[] direction, double min_t, double max_t, int flag)
+        public static void ClosestIntersectionLight(List<Object> objects, Light light, ref double tClosest, ref Object closestObject,
+                                  double[] origin, double[] direction, double min_t, double max_t, int flag)
         {
             for (int i = 0; i < objects.Count; i++)
             {
@@ -331,6 +243,110 @@ namespace CG
                     closestObject = objects[i];
                 }
             }
+        }
+
+        // Поиск ближайшего пересечения между объектом и лучом.
+        public static void ClosestIntersection(List<Object> objects, List<Light> lights, ref double tClosest, ref Object closestObject, 
+                                          double[] origin, double[] direction, double min_t, double max_t, int flag)
+        {
+            LightDisk lightDisktemp = null;
+
+            for (int i = 0; i < lights.Count; i++)
+            {
+                double[] ts = { 0, 0 };
+
+                if (lights[i] is LightDisk lightDisk)
+                {
+                    ts = IntersectRayLightDisk(origin, direction, lightDisk);
+
+                    // поиск ближайшей точки пересечения луча с объектом
+                    if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
+                    {
+                        tClosest = ts[0];
+                        closestObject = lightDisk.triangle;
+                        lightDisktemp = lightDisk;
+                    }
+
+                    if (ts[1] < tClosest && min_t < ts[1] && ts[1] < max_t)
+                    {
+                        tClosest = ts[1];
+                        closestObject = lightDisk.triangle;
+                        lightDisktemp = lightDisk;
+                    }
+                }
+            }
+
+            if (lightDisktemp != null)
+            {
+                double[] point = MyMath.Add(origin, MyMath.Multiply(tClosest, direction));
+                double[] vectorFromcentreTopoint = MyMath.Subtract(point, lightDisktemp.position);
+
+                if (MyMath.Length(vectorFromcentreTopoint) > lightDisktemp.radius)
+                {
+                    tClosest = Double.PositiveInfinity;
+                    closestObject = null;
+                }
+            }
+
+
+            for (int i = 0; i < objects.Count; i++)
+            {
+                double[] ts = { 0, 0 }; // здесь будут значения t_1, t_2, являющиеся искомыми (пересечение) 
+                                        // P = O + t * direction
+
+                if (objects[i] is Sphere sphere)
+                    if (flag != 1 || sphere.transparent <= 0)
+                        ts = IntersectRaySphere(origin, direction, sphere);
+
+                if (objects[i] is Triangle triangle)
+                    if (flag != 1 || triangle.transparent <= 0)
+                        ts = IntersectRayTriangle(origin, direction, triangle);
+
+                // поиск ближайшей точки пересечения луча с объектом
+                if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
+                {
+                    tClosest = ts[0];
+                    closestObject = objects[i];
+                }
+
+                if (ts[1] < tClosest && min_t < ts[1] && ts[1] < max_t)
+                {
+                    tClosest = ts[1];
+                    closestObject = objects[i];
+                }
+            }
+        }
+
+        public static double[] IntersectRayLightDisk(double[] origin, double[] direction, LightDisk lightDisk)
+        {
+            double[] answer = { Double.PositiveInfinity, Double.PositiveInfinity };
+            double[] pvec = MyMath.Cross(direction, lightDisk.triangle.side2);
+            double det = MyMath.DotProduct(lightDisk.triangle.side1, pvec);
+
+            double eps = 1e-6;
+
+            if (det < eps && det > -eps)
+                return answer;
+
+            double inv_det = 1.0 / det;
+            double[] tvec = MyMath.Subtract(origin, lightDisk.triangle.points[0]);
+            double u = inv_det * MyMath.DotProduct(tvec, pvec);
+
+            if (u < 0 || u > 1)
+                return answer;
+
+            double[] qvec = MyMath.Cross(tvec, lightDisk.triangle.side1);
+            double v = MyMath.DotProduct(direction, qvec) * inv_det;
+
+            if (v < 0 || u + v > 1)
+                return answer;
+
+            double t = MyMath.DotProduct(lightDisk.triangle.side2, qvec) * inv_det;
+
+            answer[0] = t;
+            answer[1] = t;
+
+            return answer;
         }
 
         public static double[] IntersectRaySphere(double[] origin, double[] direction, Sphere sphere)
@@ -406,12 +422,18 @@ namespace CG
             double tClosest = Double.PositiveInfinity;           
             Object closestObject = null;
 
-            ClosestIntersection(objects, ref tClosest, ref closestObject, origin, direction, min_t, max_t, flag);
+            ClosestIntersection(objects, lights, ref tClosest, ref closestObject, origin, direction, min_t, max_t, flag);
 
             if (closestObject == null)
             {
                 double[] background = { 0, 0, 0 }; // background color!!
                 return background;
+            }
+
+            if (closestObject.isLight == 1)
+            {
+                double[] light = closestObject.color; // background color!!
+                return light;
             }
 
             // вычисляем ближайшую точку пересечения лучем объекта

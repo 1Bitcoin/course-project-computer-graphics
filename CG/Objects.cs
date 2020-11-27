@@ -16,6 +16,7 @@ namespace CG
         public double transparent;
         public double refraction;
         public Bitmap texture;
+        public int isLight = 0;
     }
 
     class Sphere : Object
@@ -47,7 +48,8 @@ namespace CG
         public double u;
         public double v;
 
-        public Triangle(double[][] points, double[] color, double specular, double reflective, double transparent, double refraction, Bitmap texture)
+        public Triangle(double[][] points, double[] color, double specular, double reflective,
+            double transparent, double refraction, Bitmap texture, int isLight)
         {
             this.center = points[0];
             this.points = points;
@@ -62,6 +64,8 @@ namespace CG
 
             this.side1 = MyMath.Subtract(points[1], points[0]);
             this.side2 = MyMath.Subtract(points[2], points[0]);
+
+            this.isLight = isLight;
 
             Console.WriteLine("Triangle was a create");
         }
