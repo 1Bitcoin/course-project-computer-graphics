@@ -426,7 +426,7 @@ namespace CG
 
             if (closestObject == null)
             {
-                double[] background = { 0, 0, 0 }; // background color!!
+                double[] background = { 128, 166, 255 }; // background color!!
                 return background;
             }
 

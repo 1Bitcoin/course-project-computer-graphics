@@ -30,7 +30,8 @@ namespace CG
             InitializeComponent();       
             progressBar1.Value = 0;
             result = new Bitmap(canvas.Width, canvas.Height);
-            progressBar1.Maximum = result.Width * result.Height;           
+            progressBar1.Maximum = result.Width * result.Height;
+            openFileDialog1.Filter = "Text files(*.obj)|*.obj|All files(*.*)|*.*";
         }
 
         private void Form1_Load(object sender, EventArgs e)

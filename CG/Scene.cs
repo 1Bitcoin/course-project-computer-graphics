@@ -37,8 +37,8 @@ namespace CG
             double[] plane = { 0, -5001, 0 };
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
-            double[] test = { -2, 1, 3 };
-            double[] test1 = { 0, 1.8, 1 };
+            double[] test = { 0, 1, 5 };
+            double[] test1 = { -2, 2.3, 3 };
             double[] test2 = { 0, 5, -4 };
 
             double[] black = { 0, 0, 0 };
@@ -96,7 +96,7 @@ namespace CG
 
 
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
-                                               new Sphere(test, 1, red, 1000, 0.3, 0, 0, null),                                                                                          
+                                               new Sphere(test, 1, red, 0, 0, 0, 0, null),                                                                                          
                                                /*new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
