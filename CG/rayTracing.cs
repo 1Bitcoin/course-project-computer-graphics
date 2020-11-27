@@ -469,6 +469,7 @@ namespace CG
             if (closestObject is Triangle triangle)
             {
                 normal = ComputeNormalTriangle(triangle);
+                normal = MyMath.Multiply(1.0 / MyMath.Length(normal), normal); // нормализуем
 
                 if (triangle.texture != null)
                 {
