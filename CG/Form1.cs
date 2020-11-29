@@ -30,8 +30,7 @@ namespace CG
             InitializeComponent();       
             progressBar1.Value = 0;
             result = new Bitmap(canvas.Width, canvas.Height);
-            progressBar1.Maximum = result.Width * result.Height;
-            openFileDialog1.Filter = "Text files(*.obj)|*.obj|All files(*.*)|*.*";
+            progressBar1.Maximum = result.Width * result.Height;           
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -154,6 +153,7 @@ namespace CG
                     for (int j = y; j < endy & workFlag == 1; j++)
                     {
                         int[] work = { i - height / 2, j - width / 2 };
+                        int transparentBuffer = 0;
 
                         double[] direction = RayTracing.CanvasToViewport(width, height, work);
                         direction = MyMath.MultiplyMV(MyMath.getMatrixOx(angleX), direction);
@@ -161,7 +161,7 @@ namespace CG
                         direction = MyMath.MultiplyMV(MyMath.getMatrixOz(angleZ), direction);
 
                         double[] color = RayTracing.TraceRay(recursionDepth, scene.lights, scene.objects, 
-                            cameraPosition, direction, 1, Double.PositiveInfinity, 0);
+                            cameraPosition, direction, 1, Double.PositiveInfinity, 0, ref transparentBuffer);
 
                         var offset = ((j * width) + i) * depth;
 

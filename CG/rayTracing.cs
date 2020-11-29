@@ -25,16 +25,13 @@ namespace CG
         }
 
         // Проверочка.
-        public static Color Clamp(double[] color)
+        public static double[] Clamp(double[] color)
         {
-            int[] ans = { Math.Min(255, Math.Max(0, (int)color[0])),
-                             Math.Min(255, Math.Max(0, (int)color[1])),
-                             Math.Min(255, Math.Max(0, (int)color[2])) };
+            double[] ans = { Math.Min(255, Math.Max(0, color[0])),
+                             Math.Min(255, Math.Max(0, color[1])),
+                             Math.Min(255, Math.Max(0, color[2])) };
 
-            Color myRgbColor = new Color(); // переводим RGB в Color color
-            myRgbColor = Color.FromArgb(ans[0], ans[1], ans[2]);
-
-            return myRgbColor;
+            return ans;
         }
 
         // Отраженный относительно нормали вектор.
@@ -44,7 +41,7 @@ namespace CG
         }
 
         public static double ComputeLighting(List<Object> objects, List<Light> lights, double[] point, double[] normal, 
-                                             double[] view, Object myObject, double[] prevPoint, int flag)
+                                             double[] view, Object myObject, double[] prevPoint, int flag, int transparentBuffer)
         {
             double intensity = 0;
             var length_n = MyMath.Length(normal);  // Should be 1.0, but just in case...
@@ -86,14 +83,14 @@ namespace CG
                             double[] vector = result[j].direcion;
                         
                             ComputeColor(objects, light, point, normal, view, myObject, 
-                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v);
+                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v, transparentBuffer);
 
                         }
                     }
                     else
                     {
                         ComputeColor(objects, light, point, normal, view, myObject, 
-                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v);
+                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v, transparentBuffer);
                     }
 
                 }
@@ -103,7 +100,7 @@ namespace CG
 
         public static void ComputeColor(List<Object> objects, Light light, double[] point, double[] normal,
                                              double[] view, Object myObject, double[] prevPoint, int flag, double[] vec_l, double t_max,
-                                              ref double intensity, double length_n, double length_v)
+                                              ref double intensity, double length_n, double length_v, int transparentBuffer)
         {
             double n_dot_l = MyMath.DotProduct(normal, vec_l);
 
@@ -114,24 +111,42 @@ namespace CG
             ClosestIntersectionLight(objects, light, ref tClosest, ref closestObject, point, vec_l, 0.001,
                                 t_max, flag); // fix eps
 
-            // у прозрачных объектов нет тени (должна быть, зависит от прозрачности!)
+            // у прозрачных объектов тень зависит от прозрачности
             if (closestObject != null)
             {
-                /*if (closestObject.transparent > 0)
+                if (closestObject.transparent > 0)
                 {
-                    if (intensity != 0)
+                    if (transparentBuffer == 0)
                     {
-                        intensity *= 1.1 + (closestObject.transparent - 1);
+                        if (intensity > 0)
+                        {
+                            return;
+                        }
                     }
-
-                    if (intensity == 0)
+                    else
                     {
+                        // Диффузное отражение
+                        if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
+                            intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+
+                        // Зеркальное отражение
+                        if (myObject.specular != 0)
+                        {
+                            var vec_r = ReflectRay(vec_l, normal);
+                            var r_dot_v = MyMath.DotProduct(vec_r, view);
+
+                            if (r_dot_v > 0)
+                            {
+                                intensity += light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                            }
+                        }
 
                     }
+                }
 
-                }*/
                 return;
             }
+
             // Диффузное отражение
             if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
                 intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
@@ -223,8 +238,7 @@ namespace CG
                                         // P = O + t * direction
 
                 if (objects[i] is Sphere sphere)
-                    if (flag != 1 || sphere.transparent <= 0)
-                        ts = IntersectRaySphere(origin, direction, sphere);
+                    ts = IntersectRaySphere(origin, direction, sphere);
 
                 if (objects[i] is Triangle triangle)
                     if (flag != 1 || triangle.transparent <= 0)
@@ -295,12 +309,10 @@ namespace CG
                                         // P = O + t * direction
 
                 if (objects[i] is Sphere sphere)
-                    if (flag != 1 || sphere.transparent <= 0)
-                        ts = IntersectRaySphere(origin, direction, sphere);
+                    ts = IntersectRaySphere(origin, direction, sphere);
 
                 if (objects[i] is Triangle triangle)
-                    if (flag != 1 || triangle.transparent <= 0)
-                        ts = IntersectRayTriangle(origin, direction, triangle);
+                    ts = IntersectRayTriangle(origin, direction, triangle);
 
                 // поиск ближайшей точки пересечения луча с объектом
                 if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
@@ -415,9 +427,8 @@ namespace CG
         }
 
         public static double[] TraceRay(int recursionDepth, List<Light> lights, List<Object> objects, double[] origin, 
-                                    double[] direction, double min_t, double max_t, int flag)
+                                    double[] direction, double min_t, double max_t, int flag, ref int transparentBuffer)
         {
-            //int[] flags = new int[recursionDepth];
 
             double tClosest = Double.PositiveInfinity;           
             Object closestObject = null;
@@ -426,7 +437,7 @@ namespace CG
 
             if (closestObject == null)
             {
-                double[] background = { 128, 166, 255 }; // background color!!
+                double[] background = { 0, 0, 0 }; // background color!!
                 return background;
             }
 
@@ -490,42 +501,44 @@ namespace CG
             double[] newTransparentcolor = { 0, 0, 0 };
             double[] temp = { 0, 0, 0 };
 
-            int newFlag = 0;
-
             // Прозрачность
             if (closestObject.transparent > 0)
             {
-                MyMath.Refract(ref direction, normal, closestObject.refraction);
-                newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, direction, 0.001, Double.PositiveInfinity, 1);
-                newFlag = 1;
+                //MyMath.Refract(ref direction, normal, closestObject.refraction);
+
+                if (MyMath.DotProduct(direction, normal) > 0)
+                    transparentBuffer--;
+                else
+                    transparentBuffer++;
+
+                newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, 
+                    direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer);
             }
 
 
             // Локальный цвет(вычисляется либо по цвету объекты, либо по его текстуре, если она есть)
             if (closestObject.texture != null)
-                temp = MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
-                                res_color);
+                temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, transparentBuffer),
+                                res_color));
             else
-                temp = MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag),
-                    closestObject.color);
+                temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, transparentBuffer),
+                    closestObject.color));
             // вычисляем интенсивность в точке
             // и умножаем ее на RGB массив 
-
-            if (newFlag == 1)
-                temp = MyMath.Multiply(0.3, temp);
 
 
 
             if (closestObject.reflective <= 0 || recursionDepth <= 0)
             {
-                double[] newTemp = MyMath.Add(temp, MyMath.Multiply(closestObject.transparent * 0.6, newTransparentcolor));
+                double[] newTemp = MyMath.Add(MyMath.Multiply((1 - closestObject.transparent), temp), 
+                                                MyMath.Multiply(closestObject.transparent, newTransparentcolor));
                 return newTemp;
             }
 
             // Отраженный цвет
             var reflected_ray = ReflectRay(view, normal);
             var reflected_color = TraceRay(recursionDepth - 1, lights, objects, point, reflected_ray, 
-                                           0.001, Double.PositiveInfinity, 0); // fix eps
+                                           0.001, Double.PositiveInfinity, 0, ref transparentBuffer); // fix eps
       
             double[] test = MyMath.Add(MyMath.Multiply(1 - closestObject.reflective, temp),
                    MyMath.Multiply(closestObject.reflective, reflected_color));

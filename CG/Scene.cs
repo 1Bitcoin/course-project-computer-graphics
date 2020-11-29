@@ -33,13 +33,15 @@ namespace CG
             double[] highSphere = { 0, 0.17, 3 };
 
             double[] majorSphere = { 0, -0.4, 3 };
+
             double[] underMajorsphere = { 0, -1.6, 3 };
             double[] plane = { 0, -5001, 0 };
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
-            double[] test = { 0, 1, 5 };
-            double[] test1 = { -2, 2.3, 3 };
+            double[] test = { -2, 1, 3 };
+            double[] test1 = { 0, 1.8, 1 };
             double[] test2 = { 0, 5, -4 };
+            double[] test3 = { 0, 1, 6 };
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
@@ -96,15 +98,17 @@ namespace CG
 
 
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
-                                               new Sphere(test, 1, red, 0, 0, 0, 0, null),                                                                                          
-                                               /*new Sphere(majorSphere, 1, color2, 1000, 0, 1, 1, null),
+                                               new Sphere(test, 1, red, 1000, 0.3, 0, 0, null),                                                                                          
+                                               new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null),
+                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.6, 1, null),
+                                               new Sphere(majorSphere, 0.8, color2, 1000, 0, 0.6, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1, null),
                                                new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
                                                new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),    */
+                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),    
                                                
                                                new Triangle(myTriangle, orange, 0, 0.2, 0, 0, null, 0),
 
@@ -112,7 +116,7 @@ namespace CG
 
             
 
-            var lights = new List<Light>() { new AmbientLight(0.1), new PointLight(test1, 0.6) /*new LightDisk(test1, 0.7, 0.7) */ 
+            var lights = new List<Light>() { new AmbientLight(0.1), new PointLight(test1, 0.6) /*new LightDisk(test1, 0.7, 0.7)*/ 
                 };
 
             this.objects.AddRange(objects);

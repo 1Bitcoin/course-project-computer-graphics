@@ -48,9 +48,14 @@ namespace CG
             return Math.Acos(numerator / denominator);
         }
 
+        public static double Clamp(double lo, double hi, double v) 
+        {
+            return Math.Max(lo, Math.Min(hi, v));
+        }
+
         public static void Refract(ref double[] direction, double[] normal, double refraction)
-        {    
-            double cosi = DotProduct(normal, direction);
+        {
+            double cosi = Clamp(-1, 1, DotProduct(normal, direction));
             double etai = 1, etat = refraction;
             double[] n = normal;
 
