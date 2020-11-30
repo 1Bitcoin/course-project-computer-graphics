@@ -30,6 +30,8 @@ namespace CG
 
             double[] baseSphere = { 0, -0.5, 3 };
             double[] middleSphere = { 0, -0.1, 3 };
+            double[] middleSphere1 = { 0, -0.6, 3 };
+
             double[] highSphere = { 0, 0.17, 3 };
 
             double[] majorSphere = { 0, -0.4, 3 };
@@ -39,7 +41,11 @@ namespace CG
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
             double[] test = { -2, 1, 3 };
-            double[] test1 = { 0, 1.8, 1 };
+            double[] test1 = { 0, 2, 1 };
+            double[] test11 = { -1, 0.6, 0.8 };
+
+            double[] test22 = { -2, 2.5, 0 };
+
             double[] test2 = { 0, 5, -4 };
             double[] test3 = { 0, 1, 6 };
 
@@ -53,6 +59,8 @@ namespace CG
             double[] color2 = { 240, 240, 240 };
             double[] color3 = { 0, 255, 0 };
             double[] color4 = { 255, 255, 0 };
+
+            double[] green = { 0, 255, 0 };
 
             double[] poslight = { 2, 2, 0 };
 
@@ -70,6 +78,34 @@ namespace CG
                 new double[] { -1000, -1, -1000 },
                 new double[] { -1000, -1, 1000 },
                 new double[] { 1000, -1, 0}
+            };
+
+            double[][] myTriangle11 =
+{
+                new double[] { -10, -1, 10 },
+                new double[] { -10, 30, 10 },
+                new double[] { 10, -1, 10}
+            };
+
+            double[][] myTriangle22 =
+{
+                new double[] { 2, -1, 10 },
+                new double[] { 2, 30, 10 },
+                new double[] { 2, -1, -8}
+            };
+
+            double[][] myTriangle33 =
+{
+                new double[] { -2, -1, 10 },
+                new double[] { -2, 30, 10 },
+                new double[] { -5, -1, -8}
+            };
+
+            double[][] myTriangle44 =
+{
+                new double[] { -10, 1.2, 10 },
+                new double[] { 10, 1.2, 10 },
+                new double[] { 0, 1.2, -4 }
             };
 
 
@@ -98,25 +134,32 @@ namespace CG
 
 
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
-                                               new Sphere(test, 1, red, 1000, 0.3, 0, 0, null),                                                                                          
+                                               new Sphere(test, 1, green, 1000, 0.3, 0, 0, null),                                                                                          
                                                new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null),
-                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.6, 1, null),
-                                               new Sphere(majorSphere, 0.8, color2, 1000, 0, 0.6, 1, null),
+                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.9, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(underMajorsphere, 1, color1, 100, 0.01, 0, 1, null),
                                                new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
                                                new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),    
+                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null),  
                                                
-                                               new Triangle(myTriangle, orange, 0, 0.2, 0, 0, null, 0),
+                                               new Triangle(myTriangle, orange, 0, 0, 0, 0, null, 0),
+                                               /*new Triangle(myTriangle11, snow, 0, 0, 0, 0, null, 0),
+                                               new Triangle(myTriangle22, red, 0, 0, 0, 0, null, 0),
+                                               new Triangle(myTriangle33, green, 0, 0, 0, 0, null, 0),
+                                               new Triangle(myTriangle44, snow, 0, 0, 0, 0, null, 0),*/
+
+                                               //new Sphere(majorSphere, 2, color2, 1000, 0, 0.75, 1, null),
+                                              // new Sphere(middleSphere1, 0.7, snow, 1000, 0, 0.8, 1, null),
+
 
             };
 
             
 
-            var lights = new List<Light>() { new AmbientLight(0.1), new PointLight(test1, 0.6) /*new LightDisk(test1, 0.7, 0.7)*/ 
+            var lights = new List<Light>() { new AmbientLight(0.1), /*new PointLight(test1, 0.2), new PointLight(test11, 0.3)*/ new LightDisk(test22, 0.4, 0.7)
                 };
 
             this.objects.AddRange(objects);

@@ -41,7 +41,7 @@ namespace CG
         }
 
         public static double ComputeLighting(List<Object> objects, List<Light> lights, double[] point, double[] normal, 
-                                             double[] view, Object myObject, double[] prevPoint, int flag, int transparentBuffer)
+                                             double[] view, Object myObject, double[] prevPoint, int flag, ref int transparentBuffer, ref int countRays)
         {
             double intensity = 0;
             var length_n = MyMath.Length(normal);  // Should be 1.0, but just in case...
@@ -83,14 +83,14 @@ namespace CG
                             double[] vector = result[j].direcion;
                         
                             ComputeColor(objects, light, point, normal, view, myObject, 
-                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v, transparentBuffer);
+                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v, ref transparentBuffer, ref countRays);
 
                         }
                     }
                     else
                     {
                         ComputeColor(objects, light, point, normal, view, myObject, 
-                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v, transparentBuffer);
+                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v, ref transparentBuffer, ref countRays);
                     }
 
                 }
@@ -100,7 +100,7 @@ namespace CG
 
         public static void ComputeColor(List<Object> objects, Light light, double[] point, double[] normal,
                                              double[] view, Object myObject, double[] prevPoint, int flag, double[] vec_l, double t_max,
-                                              ref double intensity, double length_n, double length_v, int transparentBuffer)
+                                              ref double intensity, double length_n, double length_v, ref int transparentBuffer, ref int countRays)
         {
             double n_dot_l = MyMath.DotProduct(normal, vec_l);
 
@@ -116,37 +116,47 @@ namespace CG
             {
                 if (closestObject.transparent > 0)
                 {
-                    if (transparentBuffer == 0)
+                    if (transparentBuffer != 0)
                     {
-                        if (intensity > 0)
+                        /*if (countRays > 2)
                         {
+                            //intensity *= 6.710 * (closestObject.transparent);
                             return;
-                        }
+                        }*/
+
+                        GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+
+                        return;
                     }
                     else
                     {
-                        // Диффузное отражение
-                        if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                            intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
-
-                        // Зеркальное отражение
-                        if (myObject.specular != 0)
+                        if (light is LightDisk lightdisk)
                         {
-                            var vec_r = ReflectRay(vec_l, normal);
-                            var r_dot_v = MyMath.DotProduct(vec_r, view);
+                            //intensity *= 6.710 * (closestObject.transparent) / (int) (lightdisk.radius * 500);
+                            return;
 
-                            if (r_dot_v > 0)
-                            {
-                                intensity += light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
-                            }
+
+                        }
+                        else
+                        {
+                           // intensity *= 6.710 * (closestObject.transparent);
+                            return;
+
                         }
 
                     }
+
                 }
 
                 return;
             }
 
+            GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+        }
+
+        public static void GetSpecularAndDiffuse(ref double intensity, double n_dot_l, double length_n, double length_v, 
+                double[] vec_l, Light light, Object myObject, double[] normal, double[] view)
+        {
             // Диффузное отражение
             if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
                 intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
@@ -238,10 +248,11 @@ namespace CG
                                         // P = O + t * direction
 
                 if (objects[i] is Sphere sphere)
-                    ts = IntersectRaySphere(origin, direction, sphere);
+                    if (sphere.transparent != 1)
+                        ts = IntersectRaySphere(origin, direction, sphere);
 
                 if (objects[i] is Triangle triangle)
-                    if (flag != 1 || triangle.transparent <= 0)
+                    if (triangle.transparent != 1)
                         ts = IntersectRayTriangle(origin, direction, triangle);
 
                 // поиск ближайшей точки пересечения луча с объектом
@@ -261,7 +272,7 @@ namespace CG
 
         // Поиск ближайшего пересечения между объектом и лучом.
         public static void ClosestIntersection(List<Object> objects, List<Light> lights, ref double tClosest, ref Object closestObject, 
-                                          double[] origin, double[] direction, double min_t, double max_t, int flag)
+                                          double[] origin, double[] direction, double min_t, double max_t)
         {
             LightDisk lightDisktemp = null;
 
@@ -427,13 +438,13 @@ namespace CG
         }
 
         public static double[] TraceRay(int recursionDepth, List<Light> lights, List<Object> objects, double[] origin, 
-                                    double[] direction, double min_t, double max_t, int flag, ref int transparentBuffer)
+                                    double[] direction, double min_t, double max_t, int flag, ref int transparentBuffer, ref int countRays)
         {
 
             double tClosest = Double.PositiveInfinity;           
             Object closestObject = null;
 
-            ClosestIntersection(objects, lights, ref tClosest, ref closestObject, origin, direction, min_t, max_t, flag);
+            ClosestIntersection(objects, lights, ref tClosest, ref closestObject, origin, direction, min_t, max_t);
 
             if (closestObject == null)
             {
@@ -506,22 +517,24 @@ namespace CG
             {
                 //MyMath.Refract(ref direction, normal, closestObject.refraction);
 
-                if (MyMath.DotProduct(direction, normal) > 0)
+                countRays++;
+                double condition = MyMath.DotProduct(direction, normal);
+                if (condition > 0)
                     transparentBuffer--;
-                else
+                else if (condition < 0)
                     transparentBuffer++;
 
                 newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, 
-                    direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer);
+                    direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
             }
 
 
             // Локальный цвет(вычисляется либо по цвету объекты, либо по его текстуре, если она есть)
             if (closestObject.texture != null)
-                temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, transparentBuffer),
+                temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, ref transparentBuffer, ref countRays),
                                 res_color));
-            else
-                temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, transparentBuffer),
+            else if (closestObject.transparent <= 0)
+                temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, ref transparentBuffer, ref countRays),
                     closestObject.color));
             // вычисляем интенсивность в точке
             // и умножаем ее на RGB массив 
@@ -538,7 +551,7 @@ namespace CG
             // Отраженный цвет
             var reflected_ray = ReflectRay(view, normal);
             var reflected_color = TraceRay(recursionDepth - 1, lights, objects, point, reflected_ray, 
-                                           0.001, Double.PositiveInfinity, 0, ref transparentBuffer); // fix eps
+                                           0.001, Double.PositiveInfinity, 0, ref transparentBuffer, ref countRays); // fix eps
       
             double[] test = MyMath.Add(MyMath.Multiply(1 - closestObject.reflective, temp),
                    MyMath.Multiply(closestObject.reflective, reflected_color));
