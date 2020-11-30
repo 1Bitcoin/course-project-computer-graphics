@@ -154,6 +154,7 @@ namespace CG
                     {
                         int[] work = { i - height / 2, j - width / 2 };
                         int transparentBuffer = 0;
+                        int countRays = 0;
 
                         double[] direction = RayTracing.CanvasToViewport(width, height, work);
                         direction = MyMath.MultiplyMV(MyMath.getMatrixOx(angleX), direction);
@@ -161,7 +162,7 @@ namespace CG
                         direction = MyMath.MultiplyMV(MyMath.getMatrixOz(angleZ), direction);
 
                         double[] color = RayTracing.TraceRay(recursionDepth, scene.lights, scene.objects, 
-                            cameraPosition, direction, 1, Double.PositiveInfinity, 0, ref transparentBuffer);
+                            cameraPosition, direction, 1, Double.PositiveInfinity, 0, ref transparentBuffer, ref countRays);
 
                         var offset = ((j * width) + i) * depth;
 
