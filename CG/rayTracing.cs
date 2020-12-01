@@ -83,14 +83,14 @@ namespace CG
                             double[] vector = result[j].direcion;
                         
                             ComputeColor(objects, light, point, normal, view, myObject, 
-                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v, ref transparentBuffer, ref countRays);
+                                prevPoint, flag, vector, t_max, ref intensity, length_n, length_v, ref transparentBuffer, ref countRays, lights);
 
                         }
                     }
                     else
                     {
                         ComputeColor(objects, light, point, normal, view, myObject, 
-                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v, ref transparentBuffer, ref countRays);
+                            prevPoint, flag, vec_l, t_max, ref intensity, length_n, length_v, ref transparentBuffer, ref countRays, lights);
                     }
 
                 }
@@ -100,7 +100,8 @@ namespace CG
 
         public static void ComputeColor(List<Object> objects, Light light, double[] point, double[] normal,
                                              double[] view, Object myObject, double[] prevPoint, int flag, double[] vec_l, double t_max,
-                                              ref double intensity, double length_n, double length_v, ref int transparentBuffer, ref int countRays)
+                                              ref double intensity, double length_n, double length_v, ref int transparentBuffer, ref int countRays,
+                                                List<Light> lights)
         {
             double n_dot_l = MyMath.DotProduct(normal, vec_l);
 
@@ -129,7 +130,20 @@ namespace CG
                     }
                     else
                     {
+
+                        Object tempObject = null;
+                        double tTemp = Double.PositiveInfinity;
+                        ClosestIntersectionLight(objects, light, ref tTemp, ref tempObject, point, vec_l, 0.001,
+                                t_max, 1); // fix eps
+
+                        if (tempObject != null)
+                        {
+                            GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+                            return;
+                        }
+                                                                        
                         GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+
                         return;                    
                     }
                 }
@@ -138,6 +152,26 @@ namespace CG
             }
 
             GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+        }
+
+        public static void GetSpecularAndDiffuseTransparentShadow(ref double intensity, double n_dot_l, double length_n, double length_v,
+        double[] vec_l, Light light, Object myObject, double[] normal, double[] view)
+        {
+            // Диффузное отражение
+            if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
+                intensity += (1 - myObject.transparent) * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+
+            // Зеркальное отражение
+            if (myObject.specular != 0)
+            {
+                var vec_r = ReflectRay(vec_l, normal);
+                var r_dot_v = MyMath.DotProduct(vec_r, view);
+
+                if (r_dot_v > 0)
+                {
+                    intensity += (1 - myObject.transparent) * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                }
+            }
         }
 
         public static void GetSpecularAndDiffuseTransparent(ref double intensity, double n_dot_l, double length_n, double length_v,
@@ -254,12 +288,15 @@ namespace CG
                                         // P = O + t * direction
 
                 if (objects[i] is Sphere sphere)
-                    if (sphere.transparent != 1)
+                    if (flag == 1 & sphere.transparent > 0) // не просматриваем прозрачные объекты
+                    {
+
+                    }
+                    else
                         ts = IntersectRaySphere(origin, direction, sphere);
 
                 if (objects[i] is Triangle triangle)
-                    if (triangle.transparent != 1)
-                        ts = IntersectRayTriangle(origin, direction, triangle);
+                    ts = IntersectRayTriangle(origin, direction, triangle);
 
                 // поиск ближайшей точки пересечения луча с объектом
                 if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
@@ -524,19 +561,30 @@ namespace CG
             {
                 /*double kr = MyMath.ComputeFresnel(direction, normal, closestObject.refraction);
 
-                bool outside = MyMath.DotProduct(direction, normal) < 0;
+                countRays++;
+                double condition = MyMath.DotProduct(direction, normal);
+                if (condition > 0)
+                    transparentBuffer--;
+                else if (condition < 0)
+                    transparentBuffer++;
+
+                bool outside = condition < 0;
                 double[] bias = MyMath.Multiply(0.001, normal);
 
                 if (kr < 1)
                 {
-                    double[] vector = MyMath.Refract(direction, normal, closestObject.refraction);
-                    double[] refractionDirection = MyMath.Multiply(1.0 / MyMath.Length(vector), vector);
+                    double[] refractionDirection = MyMath.Refract(direction, normal, closestObject.refraction);
+                    //double[] refractionDirection = MyMath.Multiply(1.0 / MyMath.Length(vector), vector);
 
                     double[] refractionRayOrig = outside ? MyMath.Subtract(point, bias) : MyMath.Add(point, bias);
 
+                    newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps,
+                        direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
+
                     newTransparentcolor = MyMath.Multiply((1 - kr), newTransparentcolor);
 
-                }*/
+                }
+                */
 
                 countRays++;
                 double condition = MyMath.DotProduct(direction, normal);

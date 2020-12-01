@@ -41,13 +41,13 @@ namespace CG
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
             double[] test = { -2, 1, 3 };
-            double[] test1 = { 0, 2, 1 };
+            double[] test1 = { 0, 6, -5 };
             double[] test11 = { -1, 0.6, 0.8 };
 
             double[] test22 = { -2, 2.5, 0 };
 
             double[] test2 = { 0, 5, -4 };
-            double[] test3 = { 0, 1, 9 };
+            double[] test3 = { 0, 1, 5 };
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
@@ -136,7 +136,7 @@ namespace CG
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
                                                new Sphere(test, 1, green, 1000, 0.3, 0, 0, null),                                                                                          
                                                new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null),
-                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.6, 1, null),
+                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.9, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
@@ -159,7 +159,7 @@ namespace CG
 
             
 
-            var lights = new List<Light>() { new AmbientLight(0.3), new PointLight(test1, 0.2), new PointLight(test11, 0.3) //new LightDisk(test22, 0.4, 0.7)
+            var lights = new List<Light>() { new AmbientLight(0.3), new PointLight(test1, 0.6), //new PointLight(test11, 0.3)// new LightDisk(test22, 0.5, 0.7)
                 };
 
             this.objects.AddRange(objects);
