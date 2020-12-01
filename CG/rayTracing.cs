@@ -125,33 +125,39 @@ namespace CG
                         }*/
 
                         GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
-
                         return;
                     }
                     else
                     {
-                        if (light is LightDisk lightdisk)
-                        {
-                            //intensity *= 6.710 * (closestObject.transparent) / (int) (lightdisk.radius * 500);
-                            return;
-
-
-                        }
-                        else
-                        {
-                           // intensity *= 6.710 * (closestObject.transparent);
-                            return;
-
-                        }
-
+                        GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+                        return;                    
                     }
-
                 }
 
                 return;
             }
 
             GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+        }
+
+        public static void GetSpecularAndDiffuseTransparent(ref double intensity, double n_dot_l, double length_n, double length_v,
+        double[] vec_l, Light light, Object myObject, double[] normal, double[] view)
+        {
+            // Диффузное отражение
+            if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
+                intensity += myObject.transparent * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+
+            // Зеркальное отражение
+            if (myObject.specular != 0)
+            {
+                var vec_r = ReflectRay(vec_l, normal);
+                var r_dot_v = MyMath.DotProduct(vec_r, view);
+
+                if (r_dot_v > 0)
+                {
+                    intensity += myObject.transparent * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                }
+            }
         }
 
         public static void GetSpecularAndDiffuse(ref double intensity, double n_dot_l, double length_n, double length_v, 
@@ -510,12 +516,27 @@ namespace CG
             var view = MyMath.Multiply(-1, direction);
 
             double[] newTransparentcolor = { 0, 0, 0 };
+            double[] answer = { 0, 0, 0 };
             double[] temp = { 0, 0, 0 };
 
             // Прозрачность
             if (closestObject.transparent > 0)
             {
-                //MyMath.Refract(ref direction, normal, closestObject.refraction);
+                /*double kr = MyMath.ComputeFresnel(direction, normal, closestObject.refraction);
+
+                bool outside = MyMath.DotProduct(direction, normal) < 0;
+                double[] bias = MyMath.Multiply(0.001, normal);
+
+                if (kr < 1)
+                {
+                    double[] vector = MyMath.Refract(direction, normal, closestObject.refraction);
+                    double[] refractionDirection = MyMath.Multiply(1.0 / MyMath.Length(vector), vector);
+
+                    double[] refractionRayOrig = outside ? MyMath.Subtract(point, bias) : MyMath.Add(point, bias);
+
+                    newTransparentcolor = MyMath.Multiply((1 - kr), newTransparentcolor);
+
+                }*/
 
                 countRays++;
                 double condition = MyMath.DotProduct(direction, normal);
@@ -524,8 +545,22 @@ namespace CG
                 else if (condition < 0)
                     transparentBuffer++;
 
-                newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps, 
+                newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps,
                     direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
+
+                /*double[] buf = ReflectRay(direction, normal);
+                double[] reflectionDirection = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
+
+                double[] reflectionRayOrig = outside ? MyMath.Add(point, bias) : MyMath.Subtract(point, bias);
+
+                double[] reflectionColor = TraceRay(recursionDepth - 1, lights, objects, reflectionRayOrig, reflectionDirection,
+                   0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
+
+                // mix the two
+                answer = MyMath.Add(MyMath.Multiply(kr, reflectionColor), MyMath.Multiply((1 - kr), newTransparentcolor));
+
+                */
+
             }
 
 
@@ -533,7 +568,7 @@ namespace CG
             if (closestObject.texture != null)
                 temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, ref transparentBuffer, ref countRays),
                                 res_color));
-            else if (closestObject.transparent <= 0)
+            else
                 temp = Clamp(MyMath.Multiply(ComputeLighting(objects, lights, point, normal, view, closestObject, origin, flag, ref transparentBuffer, ref countRays),
                     closestObject.color));
             // вычисляем интенсивность в точке
@@ -544,7 +579,7 @@ namespace CG
             if (closestObject.reflective <= 0 || recursionDepth <= 0)
             {
                 double[] newTemp = MyMath.Add(MyMath.Multiply((1 - closestObject.transparent), temp), 
-                                                MyMath.Multiply(closestObject.transparent, newTransparentcolor));
+                                                MyMath.Multiply(closestObject.transparent, newTransparentcolor)); // here
                 return newTemp;
             }
 
@@ -556,7 +591,7 @@ namespace CG
             double[] test = MyMath.Add(MyMath.Multiply(1 - closestObject.reflective, temp),
                    MyMath.Multiply(closestObject.reflective, reflected_color));
 
-            return MyMath.Add(test, MyMath.Multiply(closestObject.transparent, newTransparentcolor));
+            return MyMath.Add(test, MyMath.Multiply(closestObject.transparent, newTransparentcolor)); // here
         }
     } 
 }

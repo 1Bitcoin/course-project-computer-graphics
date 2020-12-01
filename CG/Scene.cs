@@ -47,7 +47,7 @@ namespace CG
             double[] test22 = { -2, 2.5, 0 };
 
             double[] test2 = { 0, 5, -4 };
-            double[] test3 = { 0, 1, 6 };
+            double[] test3 = { 0, 1, 9 };
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
@@ -136,7 +136,7 @@ namespace CG
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
                                                new Sphere(test, 1, green, 1000, 0.3, 0, 0, null),                                                                                          
                                                new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null),
-                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.9, 1, null),
+                                               new Sphere(majorSphere, 1, color2, 1000, 0, 0.6, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
                                                new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
@@ -152,14 +152,14 @@ namespace CG
                                                new Triangle(myTriangle44, snow, 0, 0, 0, 0, null, 0),*/
 
                                                //new Sphere(majorSphere, 2, color2, 1000, 0, 0.75, 1, null),
-                                              // new Sphere(middleSphere1, 0.7, snow, 1000, 0, 0.8, 1, null),
+                                               //new Sphere(middleSphere1, 0.7, snow, 1000, 0, 0.8, 1, null),
 
 
             };
 
             
 
-            var lights = new List<Light>() { new AmbientLight(0.1), /*new PointLight(test1, 0.2), new PointLight(test11, 0.3)*/ new LightDisk(test22, 0.4, 0.7)
+            var lights = new List<Light>() { new AmbientLight(0.3), new PointLight(test1, 0.2), new PointLight(test11, 0.3) //new LightDisk(test22, 0.4, 0.7)
                 };
 
             this.objects.AddRange(objects);

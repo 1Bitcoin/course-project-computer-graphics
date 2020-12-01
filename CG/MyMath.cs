@@ -53,8 +53,10 @@ namespace CG
             return Math.Max(lo, Math.Min(hi, v));
         }
 
-        public static void Refract(ref double[] direction, double[] normal, double refraction)
+        public static double[] Refract(double[] direction, double[] normal, double refraction)
         {
+            double[] newDirection = direction;
+
             double cosi = Clamp(-1, 1, DotProduct(normal, direction));
             double etai = 1, etat = refraction;
             double[] n = normal;
@@ -72,8 +74,43 @@ namespace CG
             double k = 1 - eta * eta * (1 - cosi * cosi);
 
             if (k >= 0)
-                direction = Add(Multiply(eta, direction), 
+                newDirection = Add(Multiply(eta, direction), 
                             Multiply((eta * cosi - Math.Sqrt(k)), n));
+
+            return newDirection;
+        }
+
+        public static double ComputeFresnel(double[] direction, double[] normal, double refraction) 
+        {
+            double kr = 0;
+            double cosi = Clamp(-1, 1, DotProduct(normal, direction));
+            double etai = 1, etat = refraction;
+
+            if (cosi > 0)
+            {
+                Swap(ref etai, ref etat);
+            }
+            // Compute sini using Snell's law
+            double sint = etai / etat * Math.Sqrt(Math.Max(0, 1 - cosi * cosi)); 
+
+            // Total internal reflection
+            if (sint >= 1)
+            {
+                kr = 1; 
+            } 
+            else
+            { 
+                double cost = Math.Sqrt(Math.Max(0, 1 - sint * sint));
+                cosi = Math.Abs(cosi);
+
+                double Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+                double Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+                kr = (Rs* Rs + Rp* Rp) / 2; 
+            }
+
+            return kr;
+            // As a consequence of the conservation of energy, transmittance is given by:
+            // kt = 1 - kr;
         }
 
         public static void Swap(ref double first, ref double second)
