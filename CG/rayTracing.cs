@@ -119,17 +119,24 @@ namespace CG
                 {
                     if (transparentBuffer != 0)
                     {
-                        /*if (countRays > 2)
-                        {
-                            //intensity *= 6.710 * (closestObject.transparent);
-                            return;
-                        }*/
-
                         GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+                        Object tempObject = null;
+                        double tTemp = Double.PositiveInfinity;
+                        ClosestIntersectionLight(objects, light, ref tTemp, ref tempObject, point, vec_l, 0.001,
+                                t_max, 1); // fix eps
+
+                        if (tempObject != null)
+                        {
+                            GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+                            return;
+                        }
+                        
+                        //GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
                         return;
                     }
                     else
-                    {
+                    {   
+                        GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
 
                         Object tempObject = null;
                         double tTemp = Double.PositiveInfinity;
@@ -142,7 +149,7 @@ namespace CG
                             return;
                         }
                                                                         
-                        GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+                        //GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
 
                         return;                    
                     }
@@ -159,7 +166,7 @@ namespace CG
         {
             // Диффузное отражение
             if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                intensity += (1 - myObject.transparent) * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+                intensity -= (myObject.transparent * myObject.transparent) * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
 
             // Зеркальное отражение
             if (myObject.specular != 0)
@@ -169,7 +176,7 @@ namespace CG
 
                 if (r_dot_v > 0)
                 {
-                    intensity += (1 - myObject.transparent) * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                    intensity -= (myObject.transparent * myObject.transparent) * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
                 }
             }
         }
@@ -296,7 +303,12 @@ namespace CG
                         ts = IntersectRaySphere(origin, direction, sphere);
 
                 if (objects[i] is Triangle triangle)
-                    ts = IntersectRayTriangle(origin, direction, triangle);
+                    if (flag == 1 & triangle.transparent > 0) // не просматриваем прозрачные объекты
+                    {
+
+                    }
+                    else
+                        ts = IntersectRayTriangle(origin, direction, triangle);
 
                 // поиск ближайшей точки пересечения луча с объектом
                 if (ts[0] < tClosest && min_t < ts[0] && ts[0] < max_t)
@@ -594,7 +606,7 @@ namespace CG
                     transparentBuffer++;
 
                 newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps,
-                    direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
+                    direction, 0.001, Double.PositiveInfinity, 0, ref transparentBuffer, ref countRays);
 
                 /*double[] buf = ReflectRay(direction, normal);
                 double[] reflectionDirection = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
