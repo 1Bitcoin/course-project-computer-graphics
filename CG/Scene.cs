@@ -136,7 +136,7 @@ namespace CG
 
 
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
-                                               /*new Sphere(test, 1, green, 1000, 0.3, 0, 0, null),                                                                                          
+                                               new Sphere(test, 1, green, 1000, 0.3, 0, 0, null),                                                                                          
                                                new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null),
                                                new Sphere(majorSphere, 1, color2, 1000, 0, 0.8, 1, null),
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
@@ -145,7 +145,7 @@ namespace CG
                                                new Sphere(underMajorsphere, 1, snow, 100, 0.01, 0, 1, null),
                                                new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
                                                new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null), */
+                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null), 
                                                
                                                new Triangle(myTriangle, yellow, 0, 0.4, 0, 0, null, 0),
                                                //new Triangle(myTriangle11, orange, 0, 0, 0, 0, null, 0),
@@ -163,7 +163,7 @@ namespace CG
 
             
 
-            var lights = new List<Light>() { new AmbientLight(0.2), new PointLight(test1, 0.2), new PointLight(test11, 0.3) //new LightDisk(test22, 0.5, 0.8)
+            var lights = new List<Light>() { new AmbientLight(0.2), /*new PointLight(test1, 0.2), new PointLight(test11, 0.3)*/ new LightDisk(test22, 0.5, 0.7)
                 };
 
             this.objects.AddRange(objects);

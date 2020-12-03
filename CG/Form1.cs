@@ -29,8 +29,7 @@ namespace CG
         {
             InitializeComponent();       
             progressBar1.Value = 0;
-            result = new Bitmap(canvas.Width, canvas.Height);
-            progressBar1.Maximum = result.Width * result.Height;           
+            result = new Bitmap(canvas.Width, canvas.Height);        
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -92,7 +91,9 @@ namespace CG
 
             int recursionDepth = Int32.Parse(textBox7.Text);
             int countThread = Int32.Parse(textBox8.Text);
-            
+
+            progressBar1.Maximum = countThread;
+
             scene.SetMajorScene();
 
             var rect = new Rectangle(0, 0, result.Width, result.Height);
@@ -170,9 +171,8 @@ namespace CG
                         buffer[offset + 1] = (byte)color[1];
                         buffer[offset + 2] = (byte)color[0];
 
-                        //backgroundWorker1.ReportProgress(1);
                     }
-                  
+                    
                     if (backgroundWorker1.CancellationPending)
                     {
                         e.Cancel = true;
@@ -180,6 +180,7 @@ namespace CG
                         return;
                     }
                 }
+                //backgroundWorker1.ReportProgress(1);
 
             }
           
