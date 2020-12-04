@@ -29,7 +29,8 @@ namespace CG
         {
             InitializeComponent();       
             progressBar1.Value = 0;
-            result = new Bitmap(canvas.Width, canvas.Height);        
+            result = new Bitmap(canvas.Width, canvas.Height);
+            progressBar1.Maximum = canvas.Width;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -91,8 +92,6 @@ namespace CG
 
             int recursionDepth = Int32.Parse(textBox7.Text);
             int countThread = Int32.Parse(textBox8.Text);
-
-            progressBar1.Maximum = countThread;
 
             scene.SetMajorScene();
 
