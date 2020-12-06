@@ -7,7 +7,7 @@ using System.Drawing;
 
 namespace CG
 {
-    abstract class Object
+    public abstract class Object
     {
         public double[] center;
         public double[] color;

@@ -189,7 +189,7 @@ namespace CG
                 intensity += myObject.transparent * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
 
             // Зеркальное отражение
-            if (myObject.specular != 0)
+            /*if (myObject.specular != 0)
             {
                 var vec_r = ReflectRay(vec_l, normal);
                 var r_dot_v = MyMath.DotProduct(vec_r, view);
@@ -198,7 +198,7 @@ namespace CG
                 {
                     intensity += myObject.transparent * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
                 }
-            }
+            }*/
         }
 
         public static void GetSpecularAndDiffuse(ref double intensity, double n_dot_l, double length_n, double length_v, 

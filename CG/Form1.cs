@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Drawing.Imaging;
 using System.IO;
 
+
 namespace CG
 {
     public partial class Form1 : Form
@@ -31,6 +32,23 @@ namespace CG
             progressBar1.Value = 0;
             result = new Bitmap(canvas.Width, canvas.Height);
             progressBar1.Maximum = canvas.Width;
+
+            comboBox1.Items.Add("Сфера");
+            comboBox1.Items.Add("Треугольник");
+
+            comboBox1.SelectedIndex = 0;
+
+            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+
+            scene.SetMajorScene();
+
+            listBox1.DataSource = scene.objects;
+        }
+
+        void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedState = comboBox1.SelectedItem.ToString();
+            //MessageBox.Show(selectedState);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -84,16 +102,74 @@ namespace CG
 
             Bitmap texture1 = Image.FromFile(@"d:\1.bmp") as Bitmap;
 
-            int angleY = Int32.Parse(textBox1.Text);
-            int angleX = Int32.Parse(textBox5.Text);
-            int angleZ = Int32.Parse(textBox6.Text);
+            int angleX = 0;
+            int angleY = 0;
+            int angleZ = 0;
 
-            double[] cameraPosition = { Int32.Parse(textBox2.Text), Int32.Parse(textBox3.Text), Int32.Parse(textBox4.Text) };
+            try
+            {
+                angleY = Int32.Parse(textBox1.Text);
+                angleX = Int32.Parse(textBox5.Text);
+                angleZ = Int32.Parse(textBox6.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Проверьте введенные данные поворота камеры(только целые положительные и отрицательные числа)");
+                return;
+            }
 
-            int recursionDepth = Int32.Parse(textBox7.Text);
-            int countThread = Int32.Parse(textBox8.Text);
+            int posX = 0;
+            int posY = 0;
+            int posZ = 0;
 
-            scene.SetMajorScene();
+            try
+            {
+                posX = Int32.Parse(textBox2.Text);
+                posY = Int32.Parse(textBox3.Text);
+                posZ = Int32.Parse(textBox4.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Проверьте введенные данные позиции камеры камеры(только целые положительные и отрицательные числа)");
+                return;
+            }
+
+            double[] cameraPosition = { posX, posY, posZ };
+
+            int recursionDepth = 3;
+            int countThread = 1;
+
+            try
+            {
+                countThread = Int32.Parse(textBox8.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Проверьте введенные данные количества потоков(только целые положительные)");
+                return;
+            }
+
+            try
+            {
+                recursionDepth = Int32.Parse(textBox7.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Проверьте введенные данные количества потоков(только целые положительные)");
+                return;
+            }
+
+            if (countThread <= 0)
+            {
+                MessageBox.Show("Число потоков должно быть сторого больше нуля");
+                return;
+            }
+
+            if (recursionDepth < 0)
+            {
+                MessageBox.Show("Глубина рекурсии должна быть отрицательной");
+                return;
+            }
 
             var rect = new Rectangle(0, 0, result.Width, result.Height);
             var data = result.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadWrite, result.PixelFormat);
@@ -222,6 +298,54 @@ namespace CG
 
         }
 
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (comboBox1.SelectedItem.ToString() == "Сфера")
+            {
+                Form2 newForm = new Form2(ref scene);
+                newForm.ShowDialog();
+
+                listBox1.DataSource = null;
+                listBox1.DataSource = scene.objects;
+            }
+
+            if (comboBox1.SelectedItem.ToString() == "Треугольник")
+            {
+                Form3 newForm = new Form3(ref scene);
+                newForm.ShowDialog();
+
+                listBox1.DataSource = null;
+                listBox1.DataSource = scene.objects;
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (listBox1.SelectedItem is Object obj)
+            {
+                scene.objects.Remove(obj);
+                listBox1.DataSource = null;
+                listBox1.DataSource = scene.objects;
+            }
+
+            if (listBox1.SelectedItem is Light light)
+            {
+                scene.lights.Remove(light);
+                listBox1.DataSource = null;
+                listBox1.DataSource = scene.lights;
+            }
+
+
+
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            int indexObject = scene.objects.IndexOf((Object)listBox1.SelectedItem);
+
+
+        }
+
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
         {
 
@@ -296,6 +420,5 @@ namespace CG
         {
 
         }
-
     }
 }

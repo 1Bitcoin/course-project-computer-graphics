@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CG
 {
-    abstract class Light
+    public abstract class Light
     {
         public double intensity;
         public abstract double GetIntensityOnePoint();
