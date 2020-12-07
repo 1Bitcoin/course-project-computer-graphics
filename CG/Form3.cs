@@ -12,38 +12,61 @@ namespace CG
 {
     public partial class Form3 : Form
     {
-        Dictionary<string, double[]> colors = new Dictionary<string, double[]>();
-
         Scene tempScene = null;
-        public Form3(ref Scene scene)
+        Bitmap texture = null;
+        int tempIndex = 0;
+
+
+        public Form3(ref Scene scene, int index)
         {
             InitializeComponent();
-
-            colors.Add("Черный", new double[] { 0, 0, 0 });
-            colors.Add("Оранжевый", new double[] { 255, 128, 0 });
-            colors.Add("Белый", new double[] { 255, 255, 255 });
-            colors.Add("Красный", new double[] { 255, 0, 0 });
-            colors.Add("Жёлтый", new double[] { 255, 255, 0 });
-            colors.Add("Зеленый", new double[] { 0, 255, 0 });
-            colors.Add("Светло-серый", new double[] { 240, 240, 240 });
-
-            comboBox1.Items.Add("Белый");
-            comboBox1.Items.Add("Красный");
-            comboBox1.Items.Add("Зеленый");
-            comboBox1.Items.Add("Оранжевый");
-            comboBox1.Items.Add("Черный");
-            comboBox1.Items.Add("Жёлтый");
-            comboBox1.Items.Add("Светло-серый");
-
+            tempIndex = index;
             tempScene = scene;
 
-            comboBox1.SelectedIndex = 0;
-            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
+            if (tempIndex != -1)
+            {
+                this.Text = "Редактирование треугольника";
+                Triangle triangle = (Triangle)scene.objects[tempIndex];
+
+                numericUpDown2.Value = Convert.ToDecimal(triangle.points[0][0]);
+                numericUpDown1.Value = Convert.ToDecimal(triangle.points[0][1]);
+                numericUpDown3.Value = Convert.ToDecimal(triangle.points[0][2]);
+
+                numericUpDown4.Value = Convert.ToDecimal(triangle.points[1][0]);
+                numericUpDown8.Value = Convert.ToDecimal(triangle.points[1][1]);
+                numericUpDown9.Value = Convert.ToDecimal(triangle.points[1][2]);
+
+                numericUpDown10.Value = Convert.ToDecimal(triangle.points[2][0]);
+                numericUpDown11.Value = Convert.ToDecimal(triangle.points[2][1]);
+                numericUpDown12.Value = Convert.ToDecimal(triangle.points[2][2]);
+
+
+                numericUpDown6.Value = Convert.ToDecimal(triangle.specular);
+                numericUpDown5.Value = Convert.ToDecimal(triangle.reflective);
+                numericUpDown7.Value = Convert.ToDecimal(triangle.transparent);
+
+                this.textBox1.Text = triangle.name;
+
+                byte r = Convert.ToByte(triangle.color[0]);
+                byte g = Convert.ToByte(triangle.color[1]);
+                byte b = Convert.ToByte(triangle.color[2]);
+
+                Color myRgbColor = new Color();
+                myRgbColor = Color.FromArgb(r, g, b);
+
+                colorDialog1.Color = myRgbColor;
+
+                texture = triangle.texture;
+            }
+            else
+            {
+                int count = tempScene.GetCountTriangles() + 1;
+                this.textBox1.Text = "Треугольник #" + count;
+            }          
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedState = comboBox1.SelectedItem.ToString();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -72,15 +95,17 @@ namespace CG
             double reflective = decimal.ToDouble(numericUpDown5.Value);
             double transparent = decimal.ToDouble(numericUpDown7.Value);
 
-            double[] color = colors[comboBox1.SelectedItem.ToString()];
+            double[] color = { colorDialog1.Color.R, colorDialog1.Color.G, colorDialog1.Color.B };
 
-            Bitmap texture = null;
             if (openFileDialog1.FileName != "openFileDialog1")
                 texture = Image.FromFile(openFileDialog1.FileName) as Bitmap;
 
-            Object obj = new Triangle(positionTriangle, color, specular, reflective, transparent, 0, texture, 0);
+            Object obj = new Triangle(positionTriangle, color, specular, reflective, transparent, 0, texture, 0, textBox1.Text);
 
-            tempScene.objects.Add(obj);
+            if (tempIndex == -1)
+                tempScene.objects.Add(obj);
+            else
+                tempScene.objects[tempIndex] = obj;
 
             Close();
         }
@@ -99,6 +124,12 @@ namespace CG
         private void button3_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            colorDialog1.ShowDialog();
+
         }
     }
 }

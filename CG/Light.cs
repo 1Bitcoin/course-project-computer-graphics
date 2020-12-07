@@ -10,13 +10,26 @@ namespace CG
     {
         public double intensity;
         public abstract double GetIntensityOnePoint();
+        public string name;
+
+        public string GetName()
+        {
+            return this.name;
+        }
+
+        public string MyNameLight
+        {
+            get { return GetName(); }
+        }
     }
 
     class AmbientLight : Light // окружающий свет
     {
-        public AmbientLight(double intensity)
+        public AmbientLight(double intensity, string name)
         {
             this.intensity = intensity;
+            this.name = name;
+
         }
 
         public override double GetIntensityOnePoint()
@@ -29,10 +42,12 @@ namespace CG
     {
         public double[] position;
 
-        public PointLight(double[] position, double intensity)
+        public PointLight(double[] position, double intensity, string name)
         {
             this.position = position;
             this.intensity = intensity;
+            this.name = name;
+
         }
 
         public override double GetIntensityOnePoint()
@@ -45,10 +60,12 @@ namespace CG
     {
         public double[] direction;
 
-        public DirectionalLight(double[] direction, double intensity)
+        public DirectionalLight(double[] direction, double intensity, string name)
         {
             this.direction = direction;
             this.intensity = intensity;
+            this.name = name;
+
         }
 
         public override double GetIntensityOnePoint()
@@ -63,11 +80,13 @@ namespace CG
         public int countLightpoints = 0;
         public double radius;
 
-        public LightSphere(double[] position, double radius, double intensity)
+        public LightSphere(double[] position, double radius, double intensity, string name)
         {
             this.radius = radius;
             this.position = position;
             this.intensity = intensity;
+            this.name = name;
+
         }
 
         public override double GetIntensityOnePoint()
@@ -110,11 +129,12 @@ namespace CG
 
         public Triangle triangle;
 
-        public LightDisk(double[] position, double radius, double intensity)
+        public LightDisk(double[] position, double radius, double intensity, string name)
         {
             this.radius = radius;
             this.position = position;
-            this.intensity = intensity;          
+            this.intensity = intensity;        
+            this.name = name;
 
             double lengthSide = 6 * radius / Math.Sqrt(3);
 
@@ -127,7 +147,7 @@ namespace CG
 
             double[] snow = { 255, 255, 255 };
 
-            this.triangle = new Triangle(positionTriangle, snow, 0, 0, 0, 0, null, 1);
+            this.triangle = new Triangle(positionTriangle, snow, 0, 0, 0, 0, null, 1, "helper");
 
         }
 

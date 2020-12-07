@@ -20,10 +20,98 @@ namespace CG
 
         }
 
+        public int GetCountSpheres()
+        {
+            int count = 0;
+            for (int i = 0; i < objects.Count; i++)
+            {
+                if (objects[i] is Sphere)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int GetCountTriangles()
+        {
+            int count = 0;
+            for (int i = 0; i < objects.Count; i++)
+            {
+                if (objects[i] is Triangle)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int GetCountPointLights()
+        {
+            int count = 0;
+            for (int i = 0; i < lights.Count; i++)
+            {
+                if (lights[i] is PointLight)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int GetCountDirectionLights()
+        {
+            int count = 0;
+            for (int i = 0; i < lights.Count; i++)
+            {
+                if (lights[i] is DirectionalLight)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int GetCountDiskLights()
+        {
+            int count = 0;
+            for (int i = 0; i < lights.Count; i++)
+            {
+                if (lights[i] is LightDisk)
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int CheckScene()
+        {
+            double sumIntensity = 0;
+
+            int countAmbientLight = 0;
+
+            for (int i = 0; i < lights.Count; i++)
+            {
+                if (lights[i] is AmbientLight)
+                    countAmbientLight++;
+
+                sumIntensity += lights[i].intensity;
+            }
+
+            if (sumIntensity > 1)
+                return 1;
+
+            if (countAmbientLight > 1)
+                return 3;
+
+            for (int i = 0; i < objects.Count; i++)
+            {
+                if (objects[i].texture != null)
+                    return 2;
+            }
+
+            return 0;
+
+        }
+
         public void SetMajorScene()
         {
-            Bitmap texture = Image.FromFile(@"d:\earth.png") as Bitmap;
-            Bitmap floor = Image.FromFile(@"d:\white-black.jpg") as Bitmap;
 
             double[] eye1 = { 0.05, 0.17, 2.92 };
             double[] eye2 = { -0.05, 0.17, 2.92 };
@@ -136,18 +224,18 @@ namespace CG
 
 
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
-                                               new Sphere(test, 1, green, 1000, 0.3, 0, 0, null),                                                                                          
-                                               new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null),
-                                               new Sphere(majorSphere, 1.1, color2, 1000, 0, 0.8, 1, null),
-                                               new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null),
-                                               new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null),
-                                               new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null),
-                                               new Sphere(underMajorsphere, 0.985, snow, 100, 0, 0, 1, null),
-                                               new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null),
-                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null), 
+                                               new Sphere(test, 1, green, 1000, 0.3, 0, 0, null, "Зеленая сфера"),                                                                                          
+                                               new Sphere(test3, 1, red, 1000, 0.3, 0, 0, null, "Красная сфера"),
+                                               new Sphere(majorSphere, 1.1, color2, 1000, 0, 0.8, 1, null, "Прозрачный шар"),
+                                               new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null, "Нижний шар снеговика"),
+                                               new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null, "Средний шар снеговика"),
+                                               new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null, "Верхний шар снеговика"),
+                                               new Sphere(underMajorsphere, 0.985, snow, 100, 0, 0, 1, null, "Подставка"),
+                                               new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null, "Глаз1"),
+                                               new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null, "Глаз2"),
+                                               new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null, "Нос"), 
                                                
-                                               new Triangle(myTriangle, yellow, 1000, 0, 0, 0, null, 0),
+                                               new Triangle(myTriangle, yellow, 1000, 0, 0, 0, null, 0, "Пол"),
                                                //new Triangle(myTriangle11, orange, 0, 0, 0, 0, null, 0),
                                                /*new Triangle(myTriangle11, snow, 0, 0, 0, 0, null, 0),
                                                new Triangle(myTriangle22, red, 0, 0, 0, 0, null, 0),
@@ -163,7 +251,7 @@ namespace CG
 
             
 
-            var lights = new List<Light>() { new AmbientLight(0.2), new PointLight(test1, 0.6), new PointLight(test11, 0.3)  //new LightDisk(test22, 0.5, 0.7)
+            var lights = new List<Light>() { new AmbientLight(0.2, "Окружающее освещ."), new PointLight(test1, 0.4, "Точечный ист."), new PointLight(test11, 0.3, "Точечный ист.")
                 };
 
             this.objects.AddRange(objects);

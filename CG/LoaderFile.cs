@@ -53,7 +53,7 @@ namespace CG
             }           
         }
 
-        public static void InitializingTriangles(List<Object> objects)
+        public static void InitializingTriangles(ref Scene scene)
         {
             double[] tempColor = { 128, 0, 128 };
             Console.WriteLine(numbersPolygons);
@@ -69,7 +69,11 @@ namespace CG
                                             new double[] { vertices[index2].X, vertices[index2].Y, vertices[index2].Z },
                                             new double[] { vertices[index3].X, vertices[index3].Y, vertices[index3].Z }
                 };
-                objects.Add(new Triangle(coordTriangle, tempColor, 0, 0, 0, 0, null, 0));
+
+                int count = scene.GetCountTriangles() + 1;
+                string nameTriangle = "Треугольник модели #" + count;
+                    
+                scene.objects.Add(new Triangle(coordTriangle, tempColor, 1000, 0, 0, 0, null, 0, nameTriangle));
             }
             
             numbersPolygons = 0;

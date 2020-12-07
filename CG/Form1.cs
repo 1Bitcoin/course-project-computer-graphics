@@ -23,7 +23,7 @@ namespace CG
         int flag = 0;
         int workFlag = 1;
 
-        long totalTime = 0;
+        System.TimeSpan totalTime;
         Scene scene = new Scene();
 
         public Form1()
@@ -35,14 +35,44 @@ namespace CG
 
             comboBox1.Items.Add("Сфера");
             comboBox1.Items.Add("Треугольник");
+            comboBox1.Items.Add("Точечный источник");
+            comboBox1.Items.Add("Направленный источник");
+            comboBox1.Items.Add("Окружающее освещение");
+            comboBox1.Items.Add("Дисковый источник(мягкие тени)");
 
             comboBox1.SelectedIndex = 0;
 
             comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
 
+
             scene.SetMajorScene();
 
             listBox1.DataSource = scene.objects;
+            listBox1.DisplayMember = "MyNameObject";
+
+            listBox2.DataSource = scene.lights;
+            listBox2.DisplayMember = "MyNameLight";
+
+
+            listBox1.SelectedValueChanged += new EventHandler(Listbox1_SelectedValueChanged);
+            listBox2.SelectedValueChanged += new EventHandler(Listbox2_SelectedValueChanged);
+
+        }
+
+        void Listbox1_SelectedValueChanged(object sender, EventArgs e)
+        {
+            ListBox listbox = (ListBox)sender;
+            if (listBox2.SelectedItem != null)
+                listBox2.SetSelected((listBox2.Items.IndexOf(listBox2.SelectedItem)), false);
+
+        }
+
+        void Listbox2_SelectedValueChanged(object sender, EventArgs e)
+        {
+            ListBox listbox = (ListBox)sender;
+            if (listBox1.SelectedItem != null)
+                listBox1.SetSelected((listBox1.Items.IndexOf(listBox1.SelectedItem)), false);
+
         }
 
         void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -88,7 +118,11 @@ namespace CG
             canvas.Image = result;
             canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
             canvas.Refresh();
-            label2.Text = "Work time(milliseconds): " + totalTime;
+
+            string timeName = "Time elapsed: ";
+            string tsOut = totalTime.ToString(@"m\:ss\.ff");
+
+            label2.Text = timeName + tsOut;
         }
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
@@ -98,9 +132,6 @@ namespace CG
             workFlag = 1;
 
             result = new Bitmap(canvas.Width, canvas.Height);
-
-
-            Bitmap texture1 = Image.FromFile(@"d:\1.bmp") as Bitmap;
 
             int angleX = 0;
             int angleY = 0;
@@ -168,6 +199,25 @@ namespace CG
             if (recursionDepth < 0)
             {
                 MessageBox.Show("Глубина рекурсии должна быть отрицательной");
+                return;
+            }
+
+            int codeError = scene.CheckScene();
+
+            if (codeError == 1)
+            {
+                MessageBox.Show("Суммарная интенсивность всех источников света должна быть не больше 1");
+                return;
+            }
+
+            if (codeError == 2)
+            {
+                countThread = 1;
+            }
+
+            if (codeError == 3)
+            {
+                MessageBox.Show("На сцене может быть только один источник окружающего освещения!");
                 return;
             }
 
@@ -246,8 +296,12 @@ namespace CG
                         buffer[offset + 1] = (byte)color[1];
                         buffer[offset + 2] = (byte)color[0];
 
+
                     }
-                    
+
+                    backgroundWorker1.ReportProgress(1);
+
+
                     if (backgroundWorker1.CancellationPending)
                     {
                         e.Cancel = true;
@@ -258,9 +312,10 @@ namespace CG
                 //backgroundWorker1.ReportProgress(1);
 
             }
-          
-            string outputFile1 = @"d:\temp1.bmp";
-            string outputFile2 = @"d:\temp2.bmp";
+
+            string path = Directory.GetCurrentDirectory();
+            string outputFile1 = path + "\\temp1.bmp";
+            string outputFile2 = path + "\\temp2.bmp";
 
             Marshal.Copy(buffer, 0, data.Scan0, buffer.Length);
 
@@ -279,7 +334,7 @@ namespace CG
 
             time.Stop(); // останавливаем работу таймера
 
-            totalTime = time.ElapsedMilliseconds;
+            totalTime = time.Elapsed;
 
         }
 
@@ -292,7 +347,11 @@ namespace CG
             // читаем файл в строку
 
             LoaderFile.Load(filename);
-            LoaderFile.InitializingTriangles(scene.objects);
+            LoaderFile.InitializingTriangles(ref scene);
+
+            listBox1.DataSource = null;
+            listBox1.DataSource = scene.objects;
+            listBox1.DisplayMember = "MyNameObject";
 
             MessageBox.Show("Файл открыт");
 
@@ -302,20 +361,66 @@ namespace CG
         {
             if (comboBox1.SelectedItem.ToString() == "Сфера")
             {
-                Form2 newForm = new Form2(ref scene);
+                Form2 newForm = new Form2(ref scene, -1);
                 newForm.ShowDialog();
 
                 listBox1.DataSource = null;
                 listBox1.DataSource = scene.objects;
+                listBox1.DisplayMember = "MyNameObject";
+
             }
 
             if (comboBox1.SelectedItem.ToString() == "Треугольник")
             {
-                Form3 newForm = new Form3(ref scene);
+                Form3 newForm = new Form3(ref scene, -1);
                 newForm.ShowDialog();
 
                 listBox1.DataSource = null;
                 listBox1.DataSource = scene.objects;
+                listBox1.DisplayMember = "MyNameObject";
+
+            }
+
+            if (comboBox1.SelectedItem.ToString() == "Точечный источник")
+            {
+                Form4 newForm = new Form4(ref scene, -1);
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+
+            }
+
+            if (comboBox1.SelectedItem.ToString() == "Направленный источник")
+            {
+                Form5 newForm = new Form5(ref scene, -1);
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+
+            }
+
+            if (comboBox1.SelectedItem.ToString() == "Окружающее освещение")
+            {
+                Form6 newForm = new Form6(ref scene, -1);
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+            }
+
+            if (comboBox1.SelectedItem.ToString() == "Дисковый источник(мягкие тени)")
+            {
+                Form7 newForm = new Form7(ref scene, -1);
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
             }
         }
 
@@ -326,24 +431,91 @@ namespace CG
                 scene.objects.Remove(obj);
                 listBox1.DataSource = null;
                 listBox1.DataSource = scene.objects;
+                listBox1.DisplayMember = "MyNameObject";
             }
 
-            if (listBox1.SelectedItem is Light light)
+            if (listBox2.SelectedItem is Light light)
             {
                 scene.lights.Remove(light);
-                listBox1.DataSource = null;
-                listBox1.DataSource = scene.lights;
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
             }
-
-
-
         }
 
         private void button5_Click(object sender, EventArgs e)
         {
             int indexObject = scene.objects.IndexOf((Object)listBox1.SelectedItem);
 
+            if (listBox1.SelectedItem is Sphere)
+            {
+                Form2 newForm = new Form2(ref scene, scene.objects.IndexOf((Object)listBox1.SelectedItem));
+                newForm.ShowDialog();
 
+                listBox1.DataSource = null;
+                listBox1.DataSource = scene.objects;
+                listBox1.DisplayMember = "MyNameObject";
+            }
+
+            if (listBox1.SelectedItem is Triangle)
+            {
+                Form3 newForm = new Form3(ref scene, scene.objects.IndexOf((Object)listBox1.SelectedItem));
+                newForm.ShowDialog();
+
+                listBox1.DataSource = null;
+                listBox1.DataSource = scene.objects;
+                listBox1.DisplayMember = "MyNameObject";
+            }
+
+            if (listBox2.SelectedItem is PointLight)
+            {
+                Form4 newForm = new Form4(ref scene, scene.lights.IndexOf((Light)listBox2.SelectedItem));
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+
+            }
+
+            if (listBox2.SelectedItem is DirectionalLight)
+            {
+                Form5 newForm = new Form5(ref scene, scene.lights.IndexOf((Light)listBox2.SelectedItem));
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+
+            }
+
+            if (listBox2.SelectedItem is AmbientLight)
+            {
+                Form6 newForm = new Form6(ref scene, scene.lights.IndexOf((Light)listBox2.SelectedItem));
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+
+            }
+
+            if (listBox2.SelectedItem is LightDisk)
+            {
+                Form7 newForm = new Form7(ref scene, scene.lights.IndexOf((Light)listBox2.SelectedItem));
+                newForm.ShowDialog();
+
+                listBox2.DataSource = null;
+                listBox2.DataSource = scene.lights;
+                listBox2.DisplayMember = "MyNameLight";
+
+            }
+
+        }
+
+        private void listBox1_Click(object sender, MouseEventArgs e)
+        {
+            
         }
 
         private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
@@ -420,5 +592,12 @@ namespace CG
         {
 
         }
+
+        private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
     }
 }

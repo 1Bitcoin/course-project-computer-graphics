@@ -12,38 +12,58 @@ namespace CG
 {
     public partial class Form2 : Form
     {
-        Dictionary<string, double[]> colors = new Dictionary<string, double[]>();
         Scene tempScene = null;
+        int tempIndex = 0;
+        Bitmap texture = null;
 
-        public Form2(ref Scene scene)
+        public Form2(ref Scene scene, int index)
         {
             InitializeComponent();
+            tempIndex = index;
 
-            colors.Add("Черный", new double[] { 0, 0, 0 });
-            colors.Add("Оранжевый", new double[] { 255, 128, 0 });
-            colors.Add("Белый", new double[] { 255, 255, 255 });
-            colors.Add("Красный", new double[] { 255, 0, 0 });
-            colors.Add("Жёлтый", new double[] { 255, 255, 0 });
-            colors.Add("Зеленый", new double[] { 0, 255, 0 });
-            colors.Add("Светло-серый", new double[] { 240, 240, 240 });
+            if (tempIndex != -1)
+            {
+                this.Text = "Редактирование сферы";
+                Sphere sphere = (Sphere)scene.objects[tempIndex];
 
-            comboBox1.Items.Add("Белый");
-            comboBox1.Items.Add("Красный");
-            comboBox1.Items.Add("Зеленый");
-            comboBox1.Items.Add("Оранжевый");
-            comboBox1.Items.Add("Черный");
-            comboBox1.Items.Add("Жёлтый");
-            comboBox1.Items.Add("Светло-серый");
+                numericUpDown2.Value = Convert.ToDecimal(sphere.center[0]);
+                numericUpDown3.Value = Convert.ToDecimal(sphere.center[1]);
+                numericUpDown4.Value = Convert.ToDecimal(sphere.center[2]);
 
+                numericUpDown1.Value = Convert.ToDecimal(sphere.radius);
+
+                numericUpDown6.Value = Convert.ToDecimal(sphere.specular);
+                numericUpDown5.Value = Convert.ToDecimal(sphere.reflective);
+                numericUpDown7.Value = Convert.ToDecimal(sphere.transparent);
+
+                this.textBox1.Text = sphere.name;
+
+                byte r = Convert.ToByte(sphere.color[0]);
+                byte g = Convert.ToByte(sphere.color[1]);
+                byte b = Convert.ToByte(sphere.color[2]);
+
+                Color myRgbColor = new Color();
+                myRgbColor = Color.FromArgb(r, g, b);
+
+                colorDialog1.Color = myRgbColor;
+
+                this.textBox1.Text = sphere.name;
+                texture = sphere.texture;
+            }
+            else
+            {
+                int count = scene.GetCountSpheres() + 1;
+                this.textBox1.Text = "Сфера #" + count;
+
+            }
+          
             tempScene = scene;
 
-            comboBox1.SelectedIndex = 0;
-            comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string selectedState = comboBox1.SelectedItem.ToString();
+            
         }
 
         private void Form2_Load(object sender, EventArgs e)
@@ -62,9 +82,13 @@ namespace CG
                 return;
         }
 
+        private void button4_Click(object sender, EventArgs e)
+        {
+            colorDialog1.ShowDialog();
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
-
             double x = decimal.ToDouble(numericUpDown2.Value);
             double y = decimal.ToDouble(numericUpDown3.Value);
             double z = decimal.ToDouble(numericUpDown4.Value);
@@ -77,16 +101,19 @@ namespace CG
             double reflective = decimal.ToDouble(numericUpDown5.Value);
             double transparent = decimal.ToDouble(numericUpDown7.Value);
 
-            double[] color = colors[comboBox1.SelectedItem.ToString()];
 
-            Bitmap texture = null;
+            double[] color = { colorDialog1.Color.R, colorDialog1.Color.G, colorDialog1.Color.B };
+         
 
             if (openFileDialog1.FileName != "openFileDialog1")
                 texture = Image.FromFile(openFileDialog1.FileName) as Bitmap;
 
-            Object obj = new Sphere(position, radius, color, specular, reflective, transparent, 0, texture);
+            Object obj = new Sphere(position, radius, color, specular, reflective, transparent, 0, texture, textBox1.Text);
 
-            tempScene.objects.Add(obj);
+            if (tempIndex == -1)
+                tempScene.objects.Add(obj);
+            else
+                tempScene.objects[tempIndex] = obj;
 
             Close();
         }
@@ -95,5 +122,6 @@ namespace CG
         {
             Close();
         }
+
     }
 }
