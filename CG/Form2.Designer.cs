@@ -105,7 +105,7 @@
             // 
             // numericUpDown1
             // 
-            this.numericUpDown1.DecimalPlaces = 1;
+            this.numericUpDown1.DecimalPlaces = 2;
             this.numericUpDown1.Increment = new decimal(new int[] {
             1,
             0,
@@ -134,7 +134,7 @@
             // 
             // numericUpDown2
             // 
-            this.numericUpDown2.DecimalPlaces = 1;
+            this.numericUpDown2.DecimalPlaces = 2;
             this.numericUpDown2.Increment = new decimal(new int[] {
             5,
             0,
@@ -157,7 +157,7 @@
             // 
             // numericUpDown3
             // 
-            this.numericUpDown3.DecimalPlaces = 1;
+            this.numericUpDown3.DecimalPlaces = 2;
             this.numericUpDown3.Increment = new decimal(new int[] {
             5,
             0,
@@ -180,7 +180,7 @@
             // 
             // numericUpDown4
             // 
-            this.numericUpDown4.DecimalPlaces = 1;
+            this.numericUpDown4.DecimalPlaces = 2;
             this.numericUpDown4.Increment = new decimal(new int[] {
             5,
             0,

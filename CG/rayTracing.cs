@@ -119,7 +119,7 @@ namespace CG
                 {
                     if (transparentBuffer != 0)
                     {
-                        GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+                        GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view, closestObject);
                         Object tempObject = null;
                         double tTemp = Double.PositiveInfinity;
                         ClosestIntersectionLight(objects, light, ref tTemp, ref tempObject, point, vec_l, 0.001,
@@ -127,7 +127,7 @@ namespace CG
 
                         if (tempObject != null)
                         {
-                            GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+                            GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view, myObject);
                             return;
                         }
                         
@@ -136,19 +136,40 @@ namespace CG
                     }
                     else
                     {   
-                        GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
-
-                        Object tempObject = null;
-                        double tTemp = Double.PositiveInfinity;
-                        ClosestIntersectionLight(objects, light, ref tTemp, ref tempObject, point, vec_l, 0.001,
-                                t_max, 1); // fix eps
-
-                        if (tempObject != null)
+                        if (countRays != 0)
                         {
-                            GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
+                            GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view, myObject);
+
+                            Object tempObject = null;
+                            double tTemp = Double.PositiveInfinity;
+                            ClosestIntersectionLight(objects, light, ref tTemp, ref tempObject, point, vec_l, 0.001,
+                                    t_max, 1); // fix eps
+
+                            if (tempObject != null)
+                            {
+                                GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view, myObject);
+                                return;
+                            }
+
                             return;
                         }
-                                                                        
+                        else
+                        {
+                            GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view, myObject);
+
+                            Object tempObject = null;
+                            double tTemp = Double.PositiveInfinity;
+                            ClosestIntersectionLight(objects, light, ref tTemp, ref tempObject, point, vec_l, 0.001,
+                                    t_max, 1); // fix eps
+
+                            if (tempObject != null)
+                            {
+                                GetSpecularAndDiffuseTransparentShadow(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view, myObject);
+                                return;
+                            }
+                        }
+
+
                         //GetSpecularAndDiffuseTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, closestObject, normal, view);
 
                         return;                    
@@ -158,15 +179,18 @@ namespace CG
                 return;
             }
 
-            GetSpecularAndDiffuse(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
+            GetSpecularAndDiffuseWithoutTransparent(ref intensity, n_dot_l, length_n, length_v, vec_l, light, myObject, normal, view);
         }
 
-        public static void GetSpecularAndDiffuseTransparentShadow(ref double intensity, double n_dot_l, double length_n, double length_v,
+        public static void GetSpecularAndDiffuseWithoutTransparent(ref double intensity, double n_dot_l, double length_n, double length_v,
         double[] vec_l, Light light, Object myObject, double[] normal, double[] view)
         {
             // Диффузное отражение
             if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                intensity -= (myObject.transparent * myObject.transparent) * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+                if (myObject.transparent <= 0)
+                    intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+                else 
+                    intensity += myObject.transparent * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
 
             // Зеркальное отражение
             if (myObject.specular != 0)
@@ -176,37 +200,41 @@ namespace CG
 
                 if (r_dot_v > 0)
                 {
-                    intensity -= (myObject.transparent * myObject.transparent) * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                    if (myObject.transparent <= 0)
+                        intensity += light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                    else
+                        intensity += myObject.transparent * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+
+                }
+            }
+        }
+
+        public static void GetSpecularAndDiffuseTransparentShadow(ref double intensity, double n_dot_l, double length_n, double length_v,
+        double[] vec_l, Light light, Object closestObject, double[] normal, double[] view, Object myObject)
+        {
+            // Диффузное отражение
+            if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
+                intensity -= (closestObject.transparent) * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+
+            // Зеркальное отражение
+            if (myObject.specular != 0)
+            {
+                var vec_r = ReflectRay(vec_l, normal);
+                var r_dot_v = MyMath.DotProduct(vec_r, view);
+
+                if (r_dot_v > 0)
+                {
+                    intensity -= (closestObject.transparent) * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
                 }
             }
         }
 
         public static void GetSpecularAndDiffuseTransparent(ref double intensity, double n_dot_l, double length_n, double length_v,
-        double[] vec_l, Light light, Object myObject, double[] normal, double[] view)
+        double[] vec_l, Light light, Object closestObject, double[] normal, double[] view, Object myObject)
         {
             // Диффузное отражение
             if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                intensity += myObject.transparent * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
-
-            // Зеркальное отражение
-            /*if (myObject.specular != 0)
-            {
-                var vec_r = ReflectRay(vec_l, normal);
-                var r_dot_v = MyMath.DotProduct(vec_r, view);
-
-                if (r_dot_v > 0)
-                {
-                    intensity += myObject.transparent * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
-                }
-            }*/
-        }
-
-        public static void GetSpecularAndDiffuse(ref double intensity, double n_dot_l, double length_n, double length_v, 
-                double[] vec_l, Light light, Object myObject, double[] normal, double[] view)
-        {
-            // Диффузное отражение
-            if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
-                intensity += light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+                intensity += closestObject.transparent * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
 
             // Зеркальное отражение
             if (myObject.specular != 0)
@@ -216,7 +244,27 @@ namespace CG
 
                 if (r_dot_v > 0)
                 {
-                    intensity += light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                    intensity += closestObject.transparent * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
+                }
+            }
+        }
+
+        public static void GetSpecularAndDiffuse(ref double intensity, double n_dot_l, double length_n, double length_v, 
+                double[] vec_l, Light light, Object myObject, double[] normal, double[] view, Object closestObject)
+        {
+            // Диффузное отражение
+            if (n_dot_l > 0) // иначе не имеет физ.смысла - освещается задняя точка поверхности
+                intensity += (closestObject.transparent) * light.GetIntensityOnePoint() * n_dot_l / (length_n * MyMath.Length(vec_l));
+
+            // Зеркальное отражение
+            if (myObject.specular != 0)
+            {
+                var vec_r = ReflectRay(vec_l, normal);
+                var r_dot_v = MyMath.DotProduct(vec_r, view);
+
+                if (r_dot_v > 0)
+                {
+                    intensity += (closestObject.transparent) * light.GetIntensityOnePoint() * Math.Pow(r_dot_v / (MyMath.Length(vec_r) * length_v), myObject.specular);
                 }
             }
         }
@@ -571,33 +619,6 @@ namespace CG
             // Прозрачность
             if (closestObject.transparent > 0)
             {
-                /*double kr = MyMath.ComputeFresnel(direction, normal, closestObject.refraction);
-
-                countRays++;
-                double condition = MyMath.DotProduct(direction, normal);
-                if (condition > 0)
-                    transparentBuffer--;
-                else if (condition < 0)
-                    transparentBuffer++;
-
-                bool outside = condition < 0;
-                double[] bias = MyMath.Multiply(0.001, normal);
-
-                if (kr < 1)
-                {
-                    double[] refractionDirection = MyMath.Refract(direction, normal, closestObject.refraction);
-                    //double[] refractionDirection = MyMath.Multiply(1.0 / MyMath.Length(vector), vector);
-
-                    double[] refractionRayOrig = outside ? MyMath.Subtract(point, bias) : MyMath.Add(point, bias);
-
-                    newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps,
-                        direction, 0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
-
-                    newTransparentcolor = MyMath.Multiply((1 - kr), newTransparentcolor);
-
-                }
-                */
-
                 countRays++;
                 double condition = MyMath.DotProduct(direction, normal);
                 if (condition > 0)
@@ -608,18 +629,6 @@ namespace CG
                 newTransparentcolor = TraceRay(recursionDepth, lights, objects, pointEps,
                     direction, 0.001, Double.PositiveInfinity, 0, ref transparentBuffer, ref countRays);
 
-                /*double[] buf = ReflectRay(direction, normal);
-                double[] reflectionDirection = MyMath.Multiply(1.0 / MyMath.Length(buf), buf);
-
-                double[] reflectionRayOrig = outside ? MyMath.Add(point, bias) : MyMath.Subtract(point, bias);
-
-                double[] reflectionColor = TraceRay(recursionDepth - 1, lights, objects, reflectionRayOrig, reflectionDirection,
-                   0.001, Double.PositiveInfinity, 1, ref transparentBuffer, ref countRays);
-
-                // mix the two
-                answer = MyMath.Add(MyMath.Multiply(kr, reflectionColor), MyMath.Multiply((1 - kr), newTransparentcolor));
-
-                */
 
             }
 

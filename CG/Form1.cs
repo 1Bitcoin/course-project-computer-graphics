@@ -23,7 +23,10 @@ namespace CG
         int flag = 0;
         int workFlag = 1;
 
+        SettingModel settingModel = new SettingModel(1000, 0, 0, new double[] { 0, 255, 0 });
+
         System.TimeSpan totalTime;
+
         Scene scene = new Scene();
 
         public Form1()
@@ -32,6 +35,8 @@ namespace CG
             progressBar1.Value = 0;
             result = new Bitmap(canvas.Width, canvas.Height);
             progressBar1.Maximum = canvas.Width;
+
+            openFileDialog1.Filter = "obj files (*.obj)|*.obj";
 
             comboBox1.Items.Add("Сфера");
             comboBox1.Items.Add("Треугольник");
@@ -44,8 +49,17 @@ namespace CG
 
             comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
 
-
             scene.SetMajorScene();
+
+            string path = System.IO.Directory.GetCurrentDirectory();
+            string file1 = path + "\\el1.obj";
+            string file2 = path + "\\el2.obj";
+
+            LoaderFile.Load(file1);
+            LoaderFile.InitializingTriangles(ref scene, settingModel);
+
+            LoaderFile.Load(file2);
+            LoaderFile.InitializingTriangles(ref scene, settingModel);
 
             listBox1.DataSource = scene.objects;
             listBox1.DisplayMember = "MyNameObject";
@@ -309,7 +323,6 @@ namespace CG
                         return;
                     }
                 }
-                //backgroundWorker1.ReportProgress(1);
 
             }
 
@@ -347,7 +360,7 @@ namespace CG
             // читаем файл в строку
 
             LoaderFile.Load(filename);
-            LoaderFile.InitializingTriangles(ref scene);
+            LoaderFile.InitializingTriangles(ref scene, settingModel);
 
             listBox1.DataSource = null;
             listBox1.DataSource = scene.objects;
@@ -441,6 +454,12 @@ namespace CG
                 listBox2.DataSource = scene.lights;
                 listBox2.DisplayMember = "MyNameLight";
             }
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            Form8 newForm = new Form8(ref settingModel);
+            newForm.ShowDialog();
         }
 
         private void button5_Click(object sender, EventArgs e)
@@ -597,7 +616,5 @@ namespace CG
         {
 
         }
-
-
     }
 }

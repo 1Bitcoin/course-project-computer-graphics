@@ -113,31 +113,31 @@ namespace CG
         public void SetMajorScene()
         {
 
-            double[] eye1 = { 0.05, 0.17, 2.92 };
-            double[] eye2 = { -0.05, 0.17, 2.92 };
+            double[] eye1 = { 0.05, 0.17, 1.92 };
+            double[] eye2 = { -0.05, 0.17, 1.92 };
 
-            double[] nose = { 0, 0.13, 2.92 };
+            double[] nose = { 0, 0.13, 1.92 };
 
-            double[] baseSphere = { 0, -0.5, 3 };
-            double[] middleSphere = { 0, -0.1, 3 };
-            double[] middleSphere1 = { 0, 0.6, 3 };
+            double[] baseSphere = { 0, -0.5, 2 };
+            double[] middleSphere = { 0, -0.1, 2 };
+            double[] middleSphere1 = { 0, 0.6, 2 };
 
-            double[] highSphere = { 0, 0.17, 3 };
+            double[] highSphere = { 0, 0.17, 2 };
 
-            double[] majorSphere = { 0, -0.505, 3 };
+            double[] majorSphere = { 0, -0.505, 2 };
 
-            double[] underMajorsphere = { 0, -1.7, 3 };
+            double[] underMajorsphere = { 0, -1.7, 2 };
             double[] plane = { 0, -5001, 0 };
             double[] behindMajorsphere = { 0, 0.2, 5 };
 
-            double[] test = { -2, 1, 3 };
+            double[] test = { -2, 1, 2 };
             double[] test1 = { -1, 6, -5 };
             double[] test11 = { -1, 0.6, 2 };
 
             double[] test22 = { -2, 2.5, 0 };
 
             double[] test2 = { 0, 5, -4 };
-            double[] test3 = { 0, 1, 5 };
+            double[] test3 = { 0, 1, 4 };
 
             double[] black = { 0, 0, 0 };
             double[] orange = { 255, 128, 0 };
@@ -220,7 +220,16 @@ namespace CG
                 new double[] { 0, 4, 0 }
             };
 
+
+            double[] tree1 = { -0.45, -0.9, 1.5 };
+            double[] tree2 = { 0.45, -0.8, 1.7 };
+
+            double[] snow1 = { 0.15, -0.8, 1.4 };
+
+
             double[] oldCentre = { 0, -5001, 0 };
+
+            double[] goodColor = { 128, 128, 192 };
 
 
             var objects = new List<Object>() { /*new Sphere(oldCentre, 5000, red, 1, 0.5, 0, 0, null),*/
@@ -230,12 +239,15 @@ namespace CG
                                                new Sphere(baseSphere, 0.3, snow, 1000, 0.1, 0, 1, null, "Нижний шар снеговика"),
                                                new Sphere(middleSphere, 0.2, snow, 1000, 0.1, 0, 1, null, "Средний шар снеговика"),
                                                new Sphere(highSphere, 0.1, snow, 1000, 0.1, 0, 1, null, "Верхний шар снеговика"),
-                                               new Sphere(underMajorsphere, 0.985, snow, 100, 0, 0, 1, null, "Подставка"),
+                                               new Sphere(underMajorsphere, 0.985, snow, 600, 0, 0, 1, null, "Подставка"),
                                                new Sphere(eye1, 0.025, black, 1000, 0.3, 0, 1, null, "Глаз1"),
                                                new Sphere(eye2, 0.025, black, 1000, 0.3, 0, 1, null, "Глаз2"),
                                                new Sphere(nose, 0.025, orange, 1000, 0.3, 0, 1, null, "Нос"), 
-                                               
-                                               new Triangle(myTriangle, yellow, 1000, 0, 0, 0, null, 0, "Пол"),
+                                               new Sphere(tree1, 0.1, orange, 1000, 0, 0, 1, null, "Основание ёлки1"),
+                                               new Sphere(tree2, 0.1, orange, 1000, 0, 0, 1, null, "Основание ёлки2"),
+                                               new Sphere(snow1, 0.15, snow, 400, 0, 0, 1, null, "Снежный шар1"),
+
+                                               new Triangle(myTriangle, goodColor, 1000, 0, 0, 0, null, 0, "Пол"),
                                                //new Triangle(myTriangle11, orange, 0, 0, 0, 0, null, 0),
                                                /*new Triangle(myTriangle11, snow, 0, 0, 0, 0, null, 0),
                                                new Triangle(myTriangle22, red, 0, 0, 0, 0, null, 0),

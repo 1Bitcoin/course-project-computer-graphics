@@ -27,11 +27,14 @@ namespace CG
         }
 
         public static int numbersPolygons = 0;
-        static List<Vertex> vertices = new List<Vertex>();  // список вершин
-        public static List<Tuple<int, int, int>> polygons = new List<Tuple<int, int, int>>();  // список номеров полигонов
+        static List<Vertex> vertices;  // список вершин
+        public static List<Tuple<int, int, int>> polygons;  // список номеров полигонов
 
         public static void Load(string filename)
         {
+            vertices = new List<Vertex>();
+            polygons = new List<Tuple<int, int, int>>();
+
             string[] lines = File.ReadAllLines(filename);
             foreach (string line in lines)
             {
@@ -53,11 +56,8 @@ namespace CG
             }           
         }
 
-        public static void InitializingTriangles(ref Scene scene)
+        public static void InitializingTriangles(ref Scene scene, SettingModel settingModel)
         {
-            double[] tempColor = { 128, 0, 128 };
-            Console.WriteLine(numbersPolygons);
-
             for (int i = 0; i < numbersPolygons; i++)
             {
                 int index1 = polygons[i].Item1 - 1;
@@ -73,7 +73,8 @@ namespace CG
                 int count = scene.GetCountTriangles() + 1;
                 string nameTriangle = "Треугольник модели #" + count;
                     
-                scene.objects.Add(new Triangle(coordTriangle, tempColor, 1000, 0, 0, 0, null, 0, nameTriangle));
+                scene.objects.Add(new Triangle(coordTriangle, settingModel.color, settingModel.specular, 
+                    settingModel.reflective, settingModel.transparent, 0, null, 0, nameTriangle));
             }
             
             numbersPolygons = 0;

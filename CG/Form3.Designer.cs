@@ -125,6 +125,7 @@
             this.numericUpDown7.Name = "numericUpDown7";
             this.numericUpDown7.Size = new System.Drawing.Size(120, 20);
             this.numericUpDown7.TabIndex = 76;
+            this.numericUpDown7.ValueChanged += new System.EventHandler(this.numericUpDown7_ValueChanged);
             // 
             // label8
             // 
@@ -136,6 +137,7 @@
             this.label8.Size = new System.Drawing.Size(118, 20);
             this.label8.TabIndex = 75;
             this.label8.Text = "Прозрачность";
+            this.label8.Click += new System.EventHandler(this.label8_Click);
             // 
             // numericUpDown6
             // 
@@ -158,6 +160,7 @@
             0,
             0,
             0});
+            this.numericUpDown6.ValueChanged += new System.EventHandler(this.numericUpDown6_ValueChanged);
             // 
             // numericUpDown5
             // 
@@ -176,6 +179,7 @@
             this.numericUpDown5.Name = "numericUpDown5";
             this.numericUpDown5.Size = new System.Drawing.Size(120, 20);
             this.numericUpDown5.TabIndex = 73;
+            this.numericUpDown5.ValueChanged += new System.EventHandler(this.numericUpDown5_ValueChanged);
             // 
             // label4
             // 
@@ -187,6 +191,7 @@
             this.label4.Size = new System.Drawing.Size(211, 20);
             this.label4.TabIndex = 72;
             this.label4.Text = "Отражающая способность";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // label3
             // 
@@ -198,6 +203,7 @@
             this.label3.Size = new System.Drawing.Size(238, 20);
             this.label3.TabIndex = 71;
             this.label3.Text = "Зеркальное отражение (блик)";
+            this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // label2
             // 
@@ -209,6 +215,7 @@
             this.label2.Size = new System.Drawing.Size(48, 20);
             this.label2.TabIndex = 69;
             this.label2.Text = "Цвет";
+            this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // button1
             // 
