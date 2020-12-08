@@ -133,8 +133,8 @@ namespace CG
             canvas.Image.RotateFlip(RotateFlipType.Rotate180FlipX);
             canvas.Refresh();
 
-            string timeName = "Time elapsed: ";
-            string tsOut = totalTime.ToString(@"m\:ss\.ff");
+            string timeName = "Время рендера: ";
+            string tsOut = totalTime.ToString(@"hh\:mm\:ss\.ff");
 
             label2.Text = timeName + tsOut;
         }

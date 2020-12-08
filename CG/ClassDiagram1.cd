@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="CG.LoaderFile">
+    <Position X="11.5" Y="2.25" Width="1.75" />
+    <NestedTypes>
+      <Struct Name="CG.LoaderFile.Vertex" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>LoaderFile.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AQAAgAAAAAAAAAoAAAAAAAAAAQEQAAAAAAAABAAAAAA=</HashCode>
+      <FileName>LoaderFile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CG.MyMath">
+    <Position X="13.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAQAABAAAABAIAAAATAABAADABAAAEBACAAgAAAAA=</HashCode>
+      <FileName>MyMath.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CG.Program" Collapsed="true">
+    <Position X="8" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CG.RayTracing">
+    <Position X="8.25" Y="2.25" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAQMABAAAAQgIAIAIAAAIAgKAAAAAIEAEABhAAQAA=</HashCode>
+      <FileName>RayTracing.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CG.Scene">
+    <Position X="6" Y="2.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAAAAAAAAAAAAAAAAAAQIBACAAAAAAAAAABAw=</HashCode>
+      <FileName>Scene.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="CG.Form1" Collapsed="true">
+    <Position X="9.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>8SQEAAUQASQgABGwBJCBQIpTI8A7ABYAEHQPAAgIQIE=</HashCode>
+      <FileName>Form1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
