@@ -52,14 +52,14 @@ namespace CG
             scene.SetMajorScene();
 
             string path = System.IO.Directory.GetCurrentDirectory();
-            string file1 = path + "\\el1.obj";
-            string file2 = path + "\\el2.obj";
+            string file1 = path + "\\objects\\el1.obj";
+            string file2 = path + "\\objects\\el2.obj";
 
-            /*LoaderFile.Load(file1);
+            LoaderFile.Load(file1);
             LoaderFile.InitializingTriangles(ref scene, settingModel);
 
             LoaderFile.Load(file2);
-            LoaderFile.InitializingTriangles(ref scene, settingModel);*/
+            LoaderFile.InitializingTriangles(ref scene, settingModel);
 
             listBox1.DataSource = scene.objects;
             listBox1.DisplayMember = "MyNameObject";
